@@ -46,6 +46,7 @@ private:
   CanOpenController::Ptr m_controller;
 
   std::vector<DS402Group::Ptr> m_chain_handles;
+  bool m_has_goal;
 
 };
 

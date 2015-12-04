@@ -13,6 +13,8 @@
 //----------------------------------------------------------------------
 
 
+#include "control_msgs/FollowJointTrajectoryActionFeedback.h"
+
 
 #include "schunk_canopen_driver/SchunkCanopenNode.h"
 #include <icl_hardware_canopen/SchunkPowerBallNode.h>
@@ -24,7 +26,8 @@ SchunkCanopenNode::SchunkCanopenNode()
   : m_priv_nh("~"),
     m_action_server(m_priv_nh, "follow_joint_trajectory",
       boost::bind(&SchunkCanopenNode::goalCB, this, _1),
-      boost::bind(&SchunkCanopenNode::cancelCB, this, _1), false)
+      boost::bind(&SchunkCanopenNode::cancelCB, this, _1), false),
+    m_has_goal(false)
 {
   std::string can_device_name;
   uint8_t first_node;
@@ -127,8 +130,22 @@ void SchunkCanopenNode::goalCB (actionlib::ServerGoalHandle< control_msgs::Follo
 {
   ROS_INFO ("Executing Trajectory action");
   gh.setAccepted();
+  m_has_goal = true;
+
+
+  /* TODO: Catch errors:
+   * - Joint not enabled
+   * - EmergencyStopState
+   * - Overwriting trajectory
+   * - invalid positions
+   */
+
+
   control_msgs::FollowJointTrajectoryActionResult result;
-  std::stringstream joints, positions;
+  control_msgs::FollowJointTrajectoryActionFeedback feedback;
+  feedback.feedback.header = gh.getGoal()->trajectory.header;
+  result.header = gh.getGoal()->trajectory.header;
+
   if (gh.getGoal()->trajectory.joint_names.size() != gh.getGoal()->trajectory.points.size())
   {
     ROS_ERROR ("Number if given joint names and joint states do not match! Aborting goal!");
@@ -137,14 +154,28 @@ void SchunkCanopenNode::goalCB (actionlib::ServerGoalHandle< control_msgs::Follo
 
   for (size_t i = 0; i < gh.getGoal()->trajectory.joint_names.size(); ++i)
   {
-    joints << gh.getGoal()->trajectory.joint_names[i] << " ";
-    positions << gh.getGoal()->trajectory.points[i].positions[0] << " ";
-
     uint8_t nr = boost::lexical_cast<int>(gh.getGoal()->trajectory.joint_names[i]);
     float pos = boost::lexical_cast<float>(gh.getGoal()->trajectory.points[i].positions[0]);
     ROS_INFO_STREAM ("Joint " << static_cast<int>(nr) << ": " << pos);
-    SchunkPowerBallNode::Ptr node = m_controller->getNode<SchunkPowerBallNode>(nr);
+    SchunkPowerBallNode::Ptr node;
+    try
+    {
+      node = m_controller->getNode<SchunkPowerBallNode>(nr);
+    }
+    catch (const NotFoundException& e)
+    {
+      ROS_ERROR_STREAM ("One or more nodes could not be found in the controller. " << e.what());
+      result.result.error_code = -2;
+      result.result.error_string = e.what();
+      gh.setAborted(result.result);
+      return;
+    }
     m_controller->getNode<SchunkPowerBallNode>(nr)->setTarget(pos);
+    feedback.feedback.desired.positions.push_back(pos);
+    feedback.feedback.joint_names.push_back(gh.getGoal()->trajectory.joint_names[i]);
+
+    pos = node->getTargetFeedback();
+    feedback.feedback.actual.positions.push_back(pos);
   }
   DS402Group::Ptr grp = m_controller->getGroup<DS402Group>("arm");
 
@@ -157,7 +188,7 @@ void SchunkCanopenNode::goalCB (actionlib::ServerGoalHandle< control_msgs::Follo
   // Give the brakes time to open up
   sleep(1);
 
-  while (spent_time < max_time)
+  while (spent_time < max_time || max_time.isZero())
   {
     try {
       m_controller->syncAll();
@@ -176,17 +207,30 @@ void SchunkCanopenNode::goalCB (actionlib::ServerGoalHandle< control_msgs::Follo
       uint8_t nr = boost::lexical_cast<int>(gh.getGoal()->trajectory.joint_names[i]);
       SchunkPowerBallNode::Ptr node = m_controller->getNode<SchunkPowerBallNode>(nr);
       targets_reached &= node->isTargetReached();
+      float pos = node->getTargetFeedback();
+//       ROS_INFO_STREAM ("Node " << nr << " target reached: " << targets_reached <<
+//         ", position is: " << pos
+//       );
+      feedback.feedback.actual.time_from_start = spent_time;
+      feedback.feedback.actual.positions.at(i) = (pos);
     }
+
+
+    gh.publishFeedback(feedback.feedback);
 
     if (targets_reached)
     {
       ROS_INFO ("All targets reached" );
-      gh.setSucceeded();
+      result.result.error_code = 0;
+      result.result.error_string = "All targets successfully reached";
+      gh.setSucceeded(result.result);
       break;
     }
     spent_time = ros::Time::now() - start;
-    if (spent_time > max_time)
+    if (spent_time > max_time && !max_time.isZero())
     {
+      result.result.error_code = -5;
+      result.result.error_string = "Did not reach targets in specified time";
       gh.setAborted();
       break;
     }
