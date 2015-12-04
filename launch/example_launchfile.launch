@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="frequency" default="30" />
+  <arg name="pcan_device" default="/dev/pcanusb1" />
+
+  <node name="schunk_canopen_node" pkg="schunk_canopen_driver" type="schunk_canopen_node" output="screen">
+    <param name="frequency"           type="int"      value="$(arg frequency)" />
+    <param name="can_device_name"          type="string"   value="$(arg pcan_device)"   />
+    <rosparam command="load" file="$(find schunk_canopen_driver)/config/example_config.yaml"/>
+  </node>
+</launch>
