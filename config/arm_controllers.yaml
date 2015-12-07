@@ -1,0 +1,47 @@
+# Settings for ros_control control loop
+hardware_control_loop:
+   loop_hz: 100
+
+# Settings for ros_control hardware interface
+hardware_interface:
+   joints:
+     - arm_0_joint
+     - arm_1_joint
+     - arm_2_joint
+     - arm_3_joint
+     - arm_4_joint
+     - arm_5_joint
+
+# Publish all joint states ----------------------------------
+joint_state_controller:
+   type:         joint_state_controller/JointStateController
+   publish_rate: 100
+
+# Joint Trajectory Controller - position based -------------------------------
+# For detailed explanations of parameter see http://wiki.ros.org/joint_trajectory_controller
+pos_based_pos_traj_controller:
+   type: position_controllers/JointTrajectoryController
+   joints:
+     - arm_0_joint
+     - arm_1_joint
+     - arm_2_joint
+     - arm_3_joint
+     - arm_4_joint
+     - arm_5_joint
+   constraints:
+      goal_time: 0.6
+      stopped_velocity_tolerance: 0.05
+      arm_5_joint: {trajectory: 0.1, goal: 0.1}
+   gains:
+    arm_5_joint:
+      p: 1.0
+      d: 1.0
+      i: 1.0
+      i_clamp: 4.0
+      mass: 3.3
+      proxy:
+        lambda: 3.0
+        acc_converge: 1.5
+        vel_limit: 0.088
+   state_publish_rate:  100
+   action_monitor_rate: 10

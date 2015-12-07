@@ -7,6 +7,8 @@ project(schunk_canopen_driver)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   actionlib
+  hardware_interface
+  controller_manager
 )
 
 FIND_PACKAGE( icl_core REQUIRED)
@@ -88,7 +90,7 @@ add_definitions( ${icl_core_DEFINITIONS} )
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES
-  CATKIN_DEPENDS roscpp actionlib
+  CATKIN_DEPENDS roscpp actionlib hardware_interface controller_manager
 #  DEPENDS system_lib
 )
 
@@ -112,7 +114,10 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-add_executable(schunk_canopen_driver_node src/SchunkCanopenNode.cpp)
+add_executable(schunk_canopen_driver_node
+  src/SchunkCanopenNode.cpp
+  src/SchunkCanopenHardwareInterface.cpp
+)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes

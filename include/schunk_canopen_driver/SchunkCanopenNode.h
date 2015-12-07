@@ -23,6 +23,8 @@
 #include "actionlib/server/action_server.h"
 #include "actionlib/server/server_goal_handle.h"
 
+#include "SchunkCanopenHardwareInterface.h"
+
 #include <icl_hardware_canopen/CanOpenController.h>
 
 using namespace icl_hardware;
@@ -36,11 +38,14 @@ public:
 
 private:
   ros::NodeHandle m_priv_nh;
+  ros::NodeHandle m_pub_nh;
 
   void goalCB(actionlib::ServerGoalHandle<control_msgs::FollowJointTrajectoryAction> gh);
   void cancelCB(actionlib::ServerGoalHandle<control_msgs::FollowJointTrajectoryAction> gh);
   actionlib::ActionServer<control_msgs::FollowJointTrajectoryAction> m_action_server;
   void trajThread(actionlib::ServerGoalHandle< control_msgs::FollowJointTrajectoryAction >& gh);
+
+  void rosControlLoop ();
 
 
 
@@ -49,6 +54,12 @@ private:
   std::vector<DS402Group::Ptr> m_chain_handles;
   bool m_has_goal;
   boost::thread m_traj_thread;
+  boost::thread m_ros_control_thread;
+
+  bool m_use_ros_control;
+
+  boost::shared_ptr<SchunkCanopenHardwareInterface> m_hardware_interface;
+  boost::shared_ptr<controller_manager::ControllerManager> m_controller_manager;
 
 };
 

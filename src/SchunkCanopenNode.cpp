@@ -25,9 +25,10 @@
 SchunkCanopenNode::SchunkCanopenNode()
   : m_priv_nh("~"),
     m_action_server(m_priv_nh, "follow_joint_trajectory",
-      boost::bind(&SchunkCanopenNode::goalCB, this, _1),
-      boost::bind(&SchunkCanopenNode::cancelCB, this, _1), false),
-    m_has_goal(false)
+    boost::bind(&SchunkCanopenNode::goalCB, this, _1),
+    boost::bind(&SchunkCanopenNode::cancelCB, this, _1), false),
+    m_has_goal(false),
+    m_use_ros_control(false)
 {
   std::string can_device_name;
   uint8_t first_node;
@@ -43,11 +44,11 @@ SchunkCanopenNode::SchunkCanopenNode()
   config.change_set_immediately = true;
   config.use_blending = true;
 
-
   try
   {
     m_priv_nh.param<std::string>("can_device_name", can_device_name, "/dev/pcanusb1");
     m_priv_nh.getParam("chain_names", chain_names);
+    ros::param::get("~use_ros_control", m_use_ros_control);
   }
   catch (ros::InvalidNameException e)
   {
@@ -98,11 +99,20 @@ SchunkCanopenNode::SchunkCanopenNode()
   // initialize all nodes, by default this will start ProfilePosition mode, so we're good to enable nodes
   m_controller->initNodes();
 
+  if (m_use_ros_control)
+  {
+    m_hardware_interface.reset(
+      new SchunkCanopenHardwareInterface(m_pub_nh, m_controller));
+    m_controller_manager.reset(
+      new controller_manager::ControllerManager( m_hardware_interface.get(), m_pub_nh));
+  }
+
   // Start interface (either action server or ros_control)
   for (size_t i = 0; i < m_chain_handles.size(); ++i)
   {
     try {
-      m_chain_handles[i]->enableNodes();
+//       m_chain_handles[i]->enableNodes();
+      m_chain_handles[i]->enableNodes(ds402::MOO_INTERPOLATED_POSITION_MODE);
     }
     catch (const ProtocolException& e)
     {
@@ -112,7 +122,15 @@ SchunkCanopenNode::SchunkCanopenNode()
     }
     ROS_INFO_STREAM ("Enbaled nodes from chain " << chain_names[i]);
   }
-  m_action_server.start();
+
+  if (m_use_ros_control)
+  {
+    m_ros_control_thread = boost::thread(&SchunkCanopenNode::rosControlLoop, this);
+  }
+  else
+  {
+    m_action_server.start();
+  }
 
   // Create joint state publisher
 
@@ -281,6 +299,58 @@ void SchunkCanopenNode::cancelCB (actionlib::ServerGoalHandle< control_msgs::Fol
 
   gh.setCanceled(result.result);
 }
+
+void SchunkCanopenNode::rosControlLoop()
+{
+  ros::Duration elapsed_time;
+  ros::Time last_time = ros::Time::now();
+  ros::Time current_time = ros::Time::now();
+
+  m_controller->syncAll();
+  sleep(0.5);
+
+  for (size_t i = 0; i < m_chain_handles.size(); ++i)
+  {
+    try {
+      m_chain_handles[i]->enableNodes(ds402::MOO_INTERPOLATED_POSITION_MODE);
+    }
+    catch (const ProtocolException& e)
+    {
+      ROS_ERROR_STREAM ("Caught ProtocolException while enabling nodes");
+      continue;
+    }
+  }
+
+  SchunkPowerBallNode::Ptr node = m_controller->getNode<SchunkPowerBallNode>(8);
+
+  size_t counter = 0;
+
+  while (ros::ok()) {
+    current_time = ros::Time::now();
+    elapsed_time = current_time - last_time;
+    last_time = current_time;
+    // Input
+    m_hardware_interface->read();
+    // Control
+    m_controller->syncAll();
+//     node->printStatus();
+    m_controller_manager->update(current_time, elapsed_time);
+
+    // Output
+    /* Give the controller some time, otherwise it will send a 0 waypoint vector which
+     * might lead into a following error, if joints are not at 0
+     * TODO: Find a better solution for that.
+     */
+    if (counter > 20)
+    {
+      m_hardware_interface->write();
+    }
+    ++counter;
+
+    usleep(10000);
+  }
+}
+
 
 
 int main(int argc, char **argv)
