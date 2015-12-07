@@ -40,6 +40,7 @@ private:
   void goalCB(actionlib::ServerGoalHandle<control_msgs::FollowJointTrajectoryAction> gh);
   void cancelCB(actionlib::ServerGoalHandle<control_msgs::FollowJointTrajectoryAction> gh);
   actionlib::ActionServer<control_msgs::FollowJointTrajectoryAction> m_action_server;
+  void trajThread(actionlib::ServerGoalHandle< control_msgs::FollowJointTrajectoryAction >& gh);
 
 
 
@@ -47,6 +48,7 @@ private:
 
   std::vector<DS402Group::Ptr> m_chain_handles;
   bool m_has_goal;
+  boost::thread m_traj_thread;
 
 };
 

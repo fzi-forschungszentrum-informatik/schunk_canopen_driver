@@ -129,9 +129,6 @@ SchunkCanopenNode::SchunkCanopenNode()
 void SchunkCanopenNode::goalCB (actionlib::ServerGoalHandle< control_msgs::FollowJointTrajectoryAction > gh)
 {
   ROS_INFO ("Executing Trajectory action");
-  gh.setAccepted();
-  m_has_goal = true;
-
 
   /* TODO: Catch errors:
    * - Joint not enabled
@@ -141,16 +138,33 @@ void SchunkCanopenNode::goalCB (actionlib::ServerGoalHandle< control_msgs::Follo
    */
 
 
-  control_msgs::FollowJointTrajectoryActionResult result;
-  control_msgs::FollowJointTrajectoryActionFeedback feedback;
-  feedback.feedback.header = gh.getGoal()->trajectory.header;
-  result.header = gh.getGoal()->trajectory.header;
-
   if (gh.getGoal()->trajectory.joint_names.size() != gh.getGoal()->trajectory.points.size())
   {
     ROS_ERROR ("Number if given joint names and joint states do not match! Aborting goal!");
     return;
   }
+
+  if (m_has_goal)
+  {
+    ROS_WARN_STREAM ("Sent a new goal while another goal was still running. Depending on the " <<
+      "device configuration this will either result in a queuing or the current trajectory " <<
+      "will be overwritten."
+    );
+  }
+
+
+  gh.setAccepted();
+  m_has_goal = true;
+  m_traj_thread = boost::thread(&SchunkCanopenNode::trajThread, this, gh);
+
+}
+
+void SchunkCanopenNode::trajThread(actionlib::ServerGoalHandle< control_msgs::FollowJointTrajectoryAction >& gh)
+{
+  control_msgs::FollowJointTrajectoryActionResult result;
+  control_msgs::FollowJointTrajectoryActionFeedback feedback;
+  feedback.feedback.header = gh.getGoal()->trajectory.header;
+  result.header = gh.getGoal()->trajectory.header;
 
   for (size_t i = 0; i < gh.getGoal()->trajectory.joint_names.size(); ++i)
   {
@@ -177,10 +191,9 @@ void SchunkCanopenNode::goalCB (actionlib::ServerGoalHandle< control_msgs::Follo
     pos = node->getTargetFeedback();
     feedback.feedback.actual.positions.push_back(pos);
   }
-  DS402Group::Ptr grp = m_controller->getGroup<DS402Group>("arm");
 
-  ros::Time start = ros::Time::now();
   ros::Duration max_time = gh.getGoal()->goal_time_tolerance;
+  ros::Time start = ros::Time::now();
 
   ros::Duration spent_time = start - start;
   std::vector<bool> reached_vec;
@@ -188,7 +201,7 @@ void SchunkCanopenNode::goalCB (actionlib::ServerGoalHandle< control_msgs::Follo
   // Give the brakes time to open up
   sleep(1);
 
-  while (spent_time < max_time || max_time.isZero())
+  while ( spent_time < max_time || max_time.isZero() )
   {
     try {
       m_controller->syncAll();
@@ -234,13 +247,39 @@ void SchunkCanopenNode::goalCB (actionlib::ServerGoalHandle< control_msgs::Follo
       gh.setAborted();
       break;
     }
+    if (boost::this_thread::interruption_requested())
+    {
+      ROS_ERROR ("Interruption requested");
+      break;
+    }
   }
-
+  m_has_goal = false;
 }
+
 
 void SchunkCanopenNode::cancelCB (actionlib::ServerGoalHandle< control_msgs::FollowJointTrajectoryAction > gh)
 {
   ROS_INFO ("Canceling Trajectory action");
+
+  m_traj_thread.interrupt();
+  ROS_INFO ("Stopped trajectory thread");
+
+  for (size_t i = 0; i < m_chain_handles.size(); ++i)
+  {
+    m_chain_handles[i]->quickStop();
+  }
+  ROS_INFO ("Device stopped");
+  sleep(1);
+  for (size_t i = 0; i < m_chain_handles.size(); ++i)
+  {
+    m_chain_handles[i]->enableNodes();
+  }
+
+  control_msgs::FollowJointTrajectoryActionResult result;
+  result.result.error_code = 0;
+  result.result.error_string = "Trajectory preempted by user";
+
+  gh.setCanceled(result.result);
 }
 
 
