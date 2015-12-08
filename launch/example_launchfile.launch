@@ -7,5 +7,6 @@
     <param name="frequency"           type="int"      value="$(arg frequency)" />
     <param name="can_device_name"          type="string"   value="$(arg pcan_device)"   />
     <rosparam command="load" file="$(find schunk_canopen_driver)/config/example_config.yaml"/>
+    <param name="use_ros_control" type="bool" value="false"/>
   </node>
 </launch>
