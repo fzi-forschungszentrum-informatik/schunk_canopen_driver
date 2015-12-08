@@ -1,0 +1,4 @@
+# Service for homing (Resetting the offset) a node
+uint8[] node_ids
+---
+bool success

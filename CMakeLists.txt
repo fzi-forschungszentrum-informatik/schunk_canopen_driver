@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   hardware_interface
   controller_manager
+  message_generation
 )
 
 FIND_PACKAGE( icl_core REQUIRED)
@@ -61,9 +62,10 @@ add_definitions( ${icl_core_DEFINITIONS} )
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#    FILES
-# )
+add_service_files(
+   FILES
+   Home.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -73,10 +75,10 @@ add_definitions( ${icl_core_DEFINITIONS} )
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#    DEPENDENCIES
-#    std_msgs
-# )
+generate_messages(
+   DEPENDENCIES
+   std_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -90,7 +92,7 @@ add_definitions( ${icl_core_DEFINITIONS} )
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES
-  CATKIN_DEPENDS roscpp actionlib hardware_interface controller_manager
+  CATKIN_DEPENDS roscpp actionlib hardware_interface controller_manager message_runtime
 #  DEPENDS system_lib
 )
 

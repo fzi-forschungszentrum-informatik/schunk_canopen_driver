@@ -32,7 +32,8 @@ SchunkCanopenNode::SchunkCanopenNode()
     m_has_goal(false),
     m_use_ros_control(false),
     m_was_disabled(true),
-    m_is_enabled(false)
+    m_is_enabled(false),
+    m_homing_active(false)
 {
   std::string can_device_name;
   uint8_t first_node;
@@ -140,9 +141,10 @@ SchunkCanopenNode::SchunkCanopenNode()
   // Create joint state publisher
   // TODO:  write me
 
-  // services service
+  // services
   m_enable_service =  m_pub_nh.advertiseService("enable_nodes", &SchunkCanopenNode::enableNodes, this);
   m_quick_stop_service =  m_pub_nh.advertiseService("quick_stop_nodes", &SchunkCanopenNode::quickStopNodes, this);
+  m_home_service = m_pub_nh.advertiseService("home_reset_offset", &SchunkCanopenNode::homeNodes, this);
 
   ros::Rate loop_rate(frequency);
 
@@ -362,44 +364,47 @@ void SchunkCanopenNode::rosControlLoop()
 
   size_t counter = 0;
 
-  while (ros::ok()) {
-    current_time = ros::Time::now();
-    elapsed_time = current_time - last_time;
-    last_time = current_time;
-    // Input
-    m_hardware_interface->read();
-    if (m_hardware_interface->isFault())
+  while (ros::ok() && !m_homing_active) {
+    if (!m_homing_active)
     {
-      ROS_ERROR ("Some nodes are in FAULT state! No output will be sent. Once the fault is removed, call the enable_nodes service.");
-      m_is_enabled = false;
-    }
-    // Control
-    m_controller->syncAll();
-    if (m_was_disabled && m_is_enabled)
-    {
-      ROS_INFO ("Recovering from FAULT state. Resetting controller");
-      m_controller_manager->update(current_time, elapsed_time, true);
-      m_was_disabled = false;
-    }
-    else if (m_is_enabled)
-    {
-      m_controller_manager->update(current_time, elapsed_time);
-      /* Give the controller some time, otherwise it will send a 0 waypoint vector which
-       * might lead into a following error, if joints are not at 0
-       * TODO: Find a better solution for that.
-       */
-      if (counter > 20)
+      current_time = ros::Time::now();
+      elapsed_time = current_time - last_time;
+      last_time = current_time;
+      // Input
+      m_hardware_interface->read();
+      if (m_hardware_interface->isFault())
       {
-      // Output
-        m_hardware_interface->write();
+        ROS_ERROR ("Some nodes are in FAULT state! No output will be sent. Once the fault is removed, call the enable_nodes service.");
+        m_is_enabled = false;
       }
+      // Control
+      m_controller->syncAll();
+      if (m_was_disabled && m_is_enabled)
+      {
+        ROS_INFO ("Recovering from FAULT state. Resetting controller");
+        m_controller_manager->update(current_time, elapsed_time, true);
+        m_was_disabled = false;
+      }
+      else if (m_is_enabled)
+      {
+        m_controller_manager->update(current_time, elapsed_time);
+        /* Give the controller some time, otherwise it will send a 0 waypoint vector which
+         * might lead into a following error, if joints are not at 0
+         * TODO: Find a better solution for that.
+         */
+        if (counter > 20)
+        {
+        // Output
+          m_hardware_interface->write();
+        }
+      }
+
+  //     node->printStatus();
+
+
+      ++counter;
+
     }
-
-//     node->printStatus();
-
-
-    ++counter;
-
     usleep(10000);
   }
 }
@@ -448,6 +453,45 @@ bool SchunkCanopenNode::quickStopNodes(std_srvs::TriggerRequest& req, std_srvs::
   return true;
 }
 
+bool SchunkCanopenNode::homeNodes(schunk_canopen_driver::HomeRequest& req, schunk_canopen_driver::HomeResponse& resp)
+{
+  try
+  {
+    for (size_t i = 0; i < m_chain_handles.size(); ++i)
+    {
+      m_chain_handles[i]->disableNodes();
+    }
+  }
+  catch (const ProtocolException& e)
+  {
+    ROS_ERROR_STREAM ( "Error while stopping nodes: " << e.what());
+  }
+
+  m_homing_active = true;
+  m_is_enabled = false;
+
+  for (std::vector<uint8_t>::iterator it = req.node_ids.begin(); it != req.node_ids.end(); ++it)
+  {
+    const uint8_t& id = *it;
+    SchunkPowerBallNode::Ptr node = m_controller->getNode<SchunkPowerBallNode>(id);
+    try
+    {
+      node->home();
+    }
+    catch (const DeviceException& e)
+    {
+      ROS_ERROR_STREAM ( "Error while homing node " << static_cast<int>(id) << ": " << e.what());
+    }
+  }
+  m_homing_active = false;
+  m_was_disabled = true;
+  m_is_enabled = true;
+
+  if (m_use_ros_control)
+  {
+    m_ros_control_thread = boost::thread(&SchunkCanopenNode::rosControlLoop, this);
+  }
+}
 
 
 int main(int argc, char **argv)

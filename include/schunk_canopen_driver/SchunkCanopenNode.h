@@ -23,6 +23,8 @@
 #include "actionlib/server/action_server.h"
 #include "actionlib/server/server_goal_handle.h"
 #include "std_srvs/Trigger.h"
+#include "schunk_canopen_driver/Home.h"
+
 
 #include "SchunkCanopenHardwareInterface.h"
 
@@ -47,12 +49,14 @@ private:
 
   bool enableNodes(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp);
   bool quickStopNodes(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp);
+  bool homeNodes(schunk_canopen_driver::HomeRequest& req, schunk_canopen_driver::HomeResponse& resp);
 
   void rosControlLoop ();
 
   actionlib::ActionServer<control_msgs::FollowJointTrajectoryAction> m_action_server;
   ros::ServiceServer m_enable_service;
   ros::ServiceServer m_quick_stop_service;
+  ros::ServiceServer m_home_service;
 
 
   CanOpenController::Ptr m_controller;
@@ -69,6 +73,7 @@ private:
 
   bool m_was_disabled;
   bool m_is_enabled;
+  bool m_homing_active;
 
 };
 
