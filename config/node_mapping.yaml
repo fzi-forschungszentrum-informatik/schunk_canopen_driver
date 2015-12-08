@@ -1,0 +1,8 @@
+# This file maps your CANOPEN-IDs to the joint names used in the URDF
+# Syntax: node_mapping_<CANOPEN-ID>
+node_mapping_3: arm_0_joint
+node_mapping_5: arm_2_joint
+node_mapping_4: arm_1_joint
+node_mapping_7: arm_4_joint
+node_mapping_6: arm_3_joint
+node_mapping_8: arm_5_joint

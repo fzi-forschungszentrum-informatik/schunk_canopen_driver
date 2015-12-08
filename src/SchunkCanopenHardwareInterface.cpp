@@ -34,27 +34,32 @@ void SchunkCanopenHardwareInterface::init()
   m_joint_velocity.resize(m_node_ids.size());
   m_joint_effort.resize(m_node_ids.size());
   m_joint_names.clear();
-  m_joint_names.push_back("arm_0_joint");
-  m_joint_names.push_back("arm_1_joint");
-  m_joint_names.push_back("arm_2_joint");
-  m_joint_names.push_back("arm_3_joint");
-  m_joint_names.push_back("arm_4_joint");
-  m_joint_names.push_back("arm_5_joint");
 
   // Initialize controller
   for (std::size_t i = 0; i < m_node_ids.size(); ++i) {
-    ROS_DEBUG_STREAM("Controller Hardware interface: Loading joint with id: " << m_node_ids[i]);
+    std::string joint_name = "";
+    std::string mapping_key = "~node_mapping_" + boost::lexical_cast<std::string>(static_cast<int>(m_node_ids[i]));
+    ros::param::get(mapping_key, joint_name);
+    m_joint_names.push_back(joint_name);
+    ROS_DEBUG_STREAM("Controller Hardware interface: Loading joint with id " << static_cast<int>(m_node_ids[i]) << " named " << joint_name);
+    if (joint_name == "")
+    {
+      ROS_ERROR_STREAM ("Could not find joint name for canopen device " << static_cast<int>(m_node_ids[i]) <<
+        ". You will not be able to use this device with the controller!");
+    }
+    else
+    {
+      // Create joint state interface
+      m_joint_state_interface.registerHandle(
+          hardware_interface::JointStateHandle(m_joint_names[i],
+              &m_joint_positions[i], &m_joint_velocity[i], &m_joint_effort[i]));
 
-    // Create joint state interface
-    m_joint_state_interface.registerHandle(
-        hardware_interface::JointStateHandle(m_joint_names[i],
-            &m_joint_positions[i], &m_joint_velocity[i], &m_joint_effort[i]));
-
-    // Create position joint interface
-    m_position_joint_interface.registerHandle(
-        hardware_interface::JointHandle(
-            m_joint_state_interface.getHandle(m_joint_names[i]),
-            &m_joint_position_commands[i]));
+      // Create position joint interface
+      m_position_joint_interface.registerHandle(
+          hardware_interface::JointHandle(
+              m_joint_state_interface.getHandle(m_joint_names[i]),
+              &m_joint_position_commands[i]));
+    }
   }
   registerInterface(&m_joint_state_interface); // From RobotHW base class.
   registerInterface(&m_position_joint_interface); // From RobotHW base class.
