@@ -22,6 +22,7 @@
 #include "control_msgs/FollowJointTrajectoryAction.h"
 #include "actionlib/server/action_server.h"
 #include "actionlib/server/server_goal_handle.h"
+#include "std_srvs/Trigger.h"
 
 #include "SchunkCanopenHardwareInterface.h"
 
@@ -42,11 +43,14 @@ private:
 
   void goalCB(actionlib::ServerGoalHandle<control_msgs::FollowJointTrajectoryAction> gh);
   void cancelCB(actionlib::ServerGoalHandle<control_msgs::FollowJointTrajectoryAction> gh);
-  actionlib::ActionServer<control_msgs::FollowJointTrajectoryAction> m_action_server;
   void trajThread(actionlib::ServerGoalHandle< control_msgs::FollowJointTrajectoryAction >& gh);
+
+  bool enableNodes(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp);
 
   void rosControlLoop ();
 
+  actionlib::ActionServer<control_msgs::FollowJointTrajectoryAction> m_action_server;
+  ros::ServiceServer m_enable_service;
 
 
   CanOpenController::Ptr m_controller;
@@ -60,6 +64,9 @@ private:
 
   boost::shared_ptr<SchunkCanopenHardwareInterface> m_hardware_interface;
   boost::shared_ptr<controller_manager::ControllerManager> m_controller_manager;
+
+  bool m_was_disabled;
+  bool m_is_enabled;
 
 };
 

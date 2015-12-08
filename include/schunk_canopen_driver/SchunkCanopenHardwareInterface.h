@@ -46,6 +46,8 @@ public:
   void doSwitch(const std::list<hardware_interface::ControllerInfo>&start_list,
       const std::list<hardware_interface::ControllerInfo>&stop_list);
 
+  bool isFault() {return m_is_fault;}
+
 protected:
   ros::NodeHandle m_node_handle;
   boost::shared_ptr<CanOpenController> m_canopen_controller;
@@ -63,6 +65,8 @@ protected:
   std::vector<double> m_joint_effort;
   std::vector<double> m_joint_position_commands;
   std::vector<double> m_joint_position_commands_last;
+
+  bool m_is_fault;
 };
 
 

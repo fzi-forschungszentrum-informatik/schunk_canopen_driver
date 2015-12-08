@@ -62,12 +62,19 @@ void SchunkCanopenHardwareInterface::init()
 
 void SchunkCanopenHardwareInterface::read()
 {
+  m_is_fault = false;
   m_joint_positions.resize(m_node_ids.size());
   SchunkPowerBallNode::Ptr node;
   for (size_t i = 0; i < m_node_ids.size(); ++i)
   {
     node = m_canopen_controller->getNode<SchunkPowerBallNode>(m_node_ids[i]);
     m_joint_positions[i] = node->getTargetFeedback();
+    ds402::Statusword node_status = node->getStatus();
+    m_is_fault |= node_status.bit.fault;
+    if (node_status.bit.fault)
+    {
+      ROS_ERROR_STREAM ("Node " << static_cast<int>(m_node_ids[i]) << " is in FAULT state");
+    }
   }
 }
 

@@ -14,11 +14,13 @@
 
 
 #include "control_msgs/FollowJointTrajectoryActionFeedback.h"
+#include "ros/service_server.h"
 
 
 #include "schunk_canopen_driver/SchunkCanopenNode.h"
 #include <icl_hardware_canopen/SchunkPowerBallNode.h>
 #include "icl_core_logging/Logging.h"
+
 
 
 
@@ -28,7 +30,9 @@ SchunkCanopenNode::SchunkCanopenNode()
     boost::bind(&SchunkCanopenNode::goalCB, this, _1),
     boost::bind(&SchunkCanopenNode::cancelCB, this, _1), false),
     m_has_goal(false),
-    m_use_ros_control(false)
+    m_use_ros_control(false),
+    m_was_disabled(true),
+    m_is_enabled(false)
 {
   std::string can_device_name;
   uint8_t first_node;
@@ -133,6 +137,10 @@ SchunkCanopenNode::SchunkCanopenNode()
   }
 
   // Create joint state publisher
+  // TODO:  write me
+
+  // enable service
+  m_enable_service =  m_pub_nh.advertiseService("enable_nodes", &SchunkCanopenNode::enableNodes, this);
 
   ros::Rate loop_rate(frequency);
 
@@ -277,6 +285,7 @@ void SchunkCanopenNode::trajThread(actionlib::ServerGoalHandle< control_msgs::Fo
 
 void SchunkCanopenNode::cancelCB (actionlib::ServerGoalHandle< control_msgs::FollowJointTrajectoryAction > gh)
 {
+  m_is_enabled = false;
   ROS_INFO ("Canceling Trajectory action");
 
   m_traj_thread.interrupt();
@@ -291,6 +300,7 @@ void SchunkCanopenNode::cancelCB (actionlib::ServerGoalHandle< control_msgs::Fol
   for (size_t i = 0; i < m_chain_handles.size(); ++i)
   {
     m_chain_handles[i]->enableNodes();
+    m_is_enabled = true;
   }
 
   control_msgs::FollowJointTrajectoryActionResult result;
@@ -320,8 +330,7 @@ void SchunkCanopenNode::rosControlLoop()
       continue;
     }
   }
-
-  SchunkPowerBallNode::Ptr node = m_controller->getNode<SchunkPowerBallNode>(8);
+  m_is_enabled = true;
 
   size_t counter = 0;
 
@@ -331,25 +340,59 @@ void SchunkCanopenNode::rosControlLoop()
     last_time = current_time;
     // Input
     m_hardware_interface->read();
+    if (m_hardware_interface->isFault())
+    {
+      ROS_ERROR ("Some nodes are in FAULT state! No output will be sent. Once the fault is removed, call the enable_nodes service.");
+      m_is_enabled = false;
+    }
     // Control
     m_controller->syncAll();
-//     node->printStatus();
-    m_controller_manager->update(current_time, elapsed_time);
-
-    // Output
-    /* Give the controller some time, otherwise it will send a 0 waypoint vector which
-     * might lead into a following error, if joints are not at 0
-     * TODO: Find a better solution for that.
-     */
-    if (counter > 20)
+    if (m_was_disabled && m_is_enabled)
     {
-      m_hardware_interface->write();
+      ROS_INFO ("Recovering from FAULT state. Resetting controller");
+      m_controller_manager->update(current_time, elapsed_time, true);
+      m_was_disabled = false;
     }
+    else if (m_is_enabled)
+    {
+      m_controller_manager->update(current_time, elapsed_time);
+      /* Give the controller some time, otherwise it will send a 0 waypoint vector which
+       * might lead into a following error, if joints are not at 0
+       * TODO: Find a better solution for that.
+       */
+      if (counter > 20)
+      {
+      // Output
+        m_hardware_interface->write();
+      }
+    }
+
+
     ++counter;
 
     usleep(10000);
   }
 }
+
+bool SchunkCanopenNode::enableNodes(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp)
+{
+  try
+  {
+    for (size_t i = 0; i < m_chain_handles.size(); ++i)
+    {
+      m_chain_handles[i]->enableNodes();
+    }
+  }
+  catch (const ProtocolException& e)
+  {
+    ROS_ERROR_STREAM ( "Error while enabling nodes: " << e.what());
+  }
+  resp.success = true;
+  m_was_disabled = true;
+  m_is_enabled = true;
+  return true;
+}
+
 
 
 
