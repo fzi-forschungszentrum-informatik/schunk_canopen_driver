@@ -140,8 +140,9 @@ SchunkCanopenNode::SchunkCanopenNode()
   // Create joint state publisher
   // TODO:  write me
 
-  // enable service
+  // services service
   m_enable_service =  m_pub_nh.advertiseService("enable_nodes", &SchunkCanopenNode::enableNodes, this);
+  m_quick_stop_service =  m_pub_nh.advertiseService("quick_stop_nodes", &SchunkCanopenNode::quickStopNodes, this);
 
   ros::Rate loop_rate(frequency);
 
@@ -281,7 +282,7 @@ void SchunkCanopenNode::trajThread(actionlib::ServerGoalHandle< control_msgs::Fo
         m_has_goal = false;
         return;
       }
-      if (boost::this_thread::interruption_requested())
+      if (boost::this_thread::interruption_requested() )
       {
         ROS_ERROR ("Interruption requested");
         m_has_goal = false;
@@ -300,6 +301,9 @@ void SchunkCanopenNode::trajThread(actionlib::ServerGoalHandle< control_msgs::Fo
   else
   {
     ROS_INFO ("Not all targets reached" );
+    result.result.error_code = -5;
+    result.result.error_string = "Did not reach targets in specified time";
+    gh.setAborted();
   }
   m_has_goal = false;
 }
@@ -354,6 +358,8 @@ void SchunkCanopenNode::rosControlLoop()
   }
   m_is_enabled = true;
 
+  SchunkPowerBallNode::Ptr node = m_controller->getNode<SchunkPowerBallNode>(8);
+
   size_t counter = 0;
 
   while (ros::ok()) {
@@ -389,6 +395,8 @@ void SchunkCanopenNode::rosControlLoop()
       }
     }
 
+//     node->printStatus();
+
 
     ++counter;
 
@@ -415,6 +423,30 @@ bool SchunkCanopenNode::enableNodes(std_srvs::TriggerRequest& req, std_srvs::Tri
   return true;
 }
 
+bool SchunkCanopenNode::quickStopNodes(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp)
+{
+  m_is_enabled = false;
+  if (!m_use_ros_control)
+  {
+    m_traj_thread.interrupt();
+    ROS_INFO ("Stopped trajectory thread");
+  }
+
+  try
+  {
+    for (size_t i = 0; i < m_chain_handles.size(); ++i)
+    {
+      m_chain_handles[i]->quickStop();
+    }
+  }
+  catch (const ProtocolException& e)
+  {
+    ROS_ERROR_STREAM ( "Error while quick stopping nodes: " << e.what());
+  }
+  resp.success = true;
+  m_was_disabled = false;
+  return true;
+}
 
 
 

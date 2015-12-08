@@ -46,11 +46,13 @@ private:
   void trajThread(actionlib::ServerGoalHandle< control_msgs::FollowJointTrajectoryAction >& gh);
 
   bool enableNodes(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp);
+  bool quickStopNodes(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp);
 
   void rosControlLoop ();
 
   actionlib::ActionServer<control_msgs::FollowJointTrajectoryAction> m_action_server;
   ros::ServiceServer m_enable_service;
+  ros::ServiceServer m_quick_stop_service;
 
 
   CanOpenController::Ptr m_controller;
