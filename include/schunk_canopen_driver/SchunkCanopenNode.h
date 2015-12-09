@@ -57,11 +57,13 @@ private:
                            schunk_canopen_driver::HomeWithJointNamesResponse& resp);
   bool homeAllNodes(schunk_canopen_driver::HomeAllRequest& req,
                     schunk_canopen_driver::HomeAllResponse& resp);
+  bool closeBrakes (std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp);
 
   void rosControlLoop ();
 
   actionlib::ActionServer<control_msgs::FollowJointTrajectoryAction> m_action_server;
   ros::ServiceServer m_enable_service;
+  ros::ServiceServer m_close_brakes_service;
   ros::ServiceServer m_quick_stop_service;
   ros::ServiceServer m_home_service_all;
   ros::ServiceServer m_home_service_joint_names;

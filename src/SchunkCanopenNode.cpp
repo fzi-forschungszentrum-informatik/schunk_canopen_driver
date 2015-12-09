@@ -149,10 +149,16 @@ SchunkCanopenNode::SchunkCanopenNode()
 
   // services
   m_enable_service =  m_pub_nh.advertiseService("enable_nodes", &SchunkCanopenNode::enableNodes, this);
-  m_quick_stop_service =  m_pub_nh.advertiseService("quick_stop_nodes", &SchunkCanopenNode::quickStopNodes, this);
-  m_home_service_all = m_pub_nh.advertiseService("home_reset_offset_all", &SchunkCanopenNode::homeAllNodes, this);
-  m_home_service_joint_names = m_pub_nh.advertiseService("home_reset_offset_by_id", &SchunkCanopenNode::homeNodesCanIds, this);
-  m_home_service_canopen_ids = m_pub_nh.advertiseService("home_reset_offset_by_name", &SchunkCanopenNode::homeNodesJointNames, this);
+  m_close_brakes_service =  m_pub_nh.advertiseService("close_brakes",
+     &SchunkCanopenNode::closeBrakes, this);
+  m_quick_stop_service =  m_pub_nh.advertiseService("quick_stop_nodes",
+     &SchunkCanopenNode::quickStopNodes, this);
+  m_home_service_all = m_pub_nh.advertiseService("home_reset_offset_all",
+     &SchunkCanopenNode::homeAllNodes, this);
+  m_home_service_joint_names = m_pub_nh.advertiseService("home_reset_offset_by_id",
+     &SchunkCanopenNode::homeNodesCanIds, this);
+  m_home_service_canopen_ids = m_pub_nh.advertiseService("home_reset_offset_by_name",
+     &SchunkCanopenNode::homeNodesJointNames, this);
 
   ros::Rate loop_rate(frequency);
 
@@ -444,6 +450,27 @@ bool SchunkCanopenNode::enableNodes(std_srvs::TriggerRequest& req, std_srvs::Tri
   resp.success = true;
   m_was_disabled = true;
   m_is_enabled = true;
+  return true;
+}
+
+bool SchunkCanopenNode::closeBrakes(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp)
+{
+  try
+  {
+    for (size_t i = 0; i < m_chain_handles.size(); ++i)
+    {
+      m_chain_handles[i]->closeBrakes();
+    }
+  }
+  catch (const ProtocolException& e)
+  {
+    ROS_ERROR_STREAM ( "Error while enabling nodes: " << e.what());
+  }
+  resp.success = true;
+  m_was_disabled = true;
+  m_is_enabled = false;
+
+  ROS_INFO ("Closed brakes for all nodes. For reenabling, please use the enable_nodes service. Thank you for your attention.");
   return true;
 }
 
