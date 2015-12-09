@@ -41,6 +41,7 @@ SchunkCanopenNode::SchunkCanopenNode()
   std::vector<std::string> chain_names;
   std::map<std::string, std::vector<int> > chain_configuratuions;
   m_chain_handles.clear();
+  sensor_msgs::JointState joint_msg;
 
   ds402::ProfilePositionModeConfiguration config;
   config.profile_acceleration = 0.2;
@@ -98,6 +99,7 @@ SchunkCanopenNode::SchunkCanopenNode()
       ros::param::get(mapping_key, joint_name);
 
       m_joint_name_mapping[joint_name] =  static_cast<uint8_t>(chain[j]);
+      joint_msg.name.push_back(joint_name);
     }
   }
 
@@ -162,10 +164,22 @@ SchunkCanopenNode::SchunkCanopenNode()
 
   ros::Rate loop_rate(frequency);
 
+  DS402Node::Ptr node;
   while (ros::ok())
   {
     ros::spinOnce();
 
+    joint_msg.position.clear();
+    for (std::map<std::string, uint8_t>::iterator it = m_joint_name_mapping.begin();
+         it != m_joint_name_mapping.end();
+         ++it)
+    {
+      const uint8_t& nr = it->second;
+      node = m_controller->getNode<DS402Node>(nr);
+      joint_msg.position.push_back(node->getTargetFeedback());
+    }
+    joint_msg.header.stamp = ros::Time::now();
+    m_joint_pub.publish(joint_msg);
     loop_rate.sleep();
   }
 }
@@ -216,13 +230,13 @@ void SchunkCanopenNode::trajThread(actionlib::ServerGoalHandle< control_msgs::Fo
 
   for (size_t waypoint = 0; waypoint < gh.getGoal()->trajectory.points.size(); ++waypoint)
   {
-    sensor_msgs::JointState joint_msg;
     feedback.feedback.desired.positions.clear();
     feedback.feedback.joint_names.clear();
     feedback.feedback.actual.positions.clear();
     for (size_t i = 0; i < gh.getGoal()->trajectory.joint_names.size(); ++i)
     {
-      uint8_t nr = boost::lexical_cast<int>(gh.getGoal()->trajectory.joint_names[i]);
+
+      uint8_t nr = m_joint_name_mapping[gh.getGoal()->trajectory.joint_names[i]];
       float pos = boost::lexical_cast<float>(gh.getGoal()->trajectory.points[waypoint].positions[i]);
       ROS_INFO_STREAM ("Joint " << static_cast<int>(nr) << ": " << pos);
       SchunkPowerBallNode::Ptr node;
@@ -241,11 +255,10 @@ void SchunkCanopenNode::trajThread(actionlib::ServerGoalHandle< control_msgs::Fo
       m_controller->getNode<SchunkPowerBallNode>(nr)->setTarget(pos);
       feedback.feedback.desired.positions.push_back(pos);
       feedback.feedback.joint_names.push_back(gh.getGoal()->trajectory.joint_names[i]);
-      joint_msg.name.push_back(gh.getGoal()->trajectory.joint_names[i]);
+
 
       pos = node->getTargetFeedback();
       feedback.feedback.actual.positions.push_back(pos);
-      joint_msg.position.push_back(pos);
     }
     ros::Duration max_time = gh.getGoal()->goal_time_tolerance;
 
@@ -271,7 +284,7 @@ void SchunkCanopenNode::trajThread(actionlib::ServerGoalHandle< control_msgs::Fo
       bool waypoint_reached = true;
       for (size_t i = 0; i < gh.getGoal()->trajectory.joint_names.size(); ++i)
       {
-        uint8_t nr = boost::lexical_cast<int>(gh.getGoal()->trajectory.joint_names[i]);
+        uint8_t nr = m_joint_name_mapping[gh.getGoal()->trajectory.joint_names[i]];
         SchunkPowerBallNode::Ptr node = m_controller->getNode<SchunkPowerBallNode>(nr);
         waypoint_reached &= node->isTargetReached();
         float pos = node->getTargetFeedback();
@@ -280,14 +293,12 @@ void SchunkCanopenNode::trajThread(actionlib::ServerGoalHandle< control_msgs::Fo
   //       );
         feedback.feedback.actual.time_from_start = spent_time;
         feedback.feedback.actual.positions.at(i) = (pos);
-        joint_msg.position.at(i) = pos;
       }
 
 
       gh.publishFeedback(feedback.feedback);
       targets_reached = waypoint_reached;
 
-      m_joint_pub.publish(joint_msg);
 
 
       if (waypoint_reached)
@@ -445,9 +456,9 @@ bool SchunkCanopenNode::enableNodes(std_srvs::TriggerRequest& req, std_srvs::Tri
   {
     ROS_ERROR_STREAM ( "Error while enabling nodes: " << e.what());
   }
-  resp.success = true;
   m_was_disabled = true;
   m_is_enabled = true;
+  resp.success = true;
   return true;
 }
 
@@ -494,6 +505,7 @@ bool SchunkCanopenNode::quickStopNodes(std_srvs::TriggerRequest& req, std_srvs::
   }
   resp.success = true;
   m_was_disabled = false;
+  ROS_INFO ("Quick stopped all nodes. For reenabling, please use the enable_nodes service. Thank you for your attention.");
   return true;
 }
 
