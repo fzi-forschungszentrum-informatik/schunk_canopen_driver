@@ -50,16 +50,16 @@ SchunkCanopenNode::SchunkCanopenNode()
   config.change_set_immediately = true;
   config.use_blending = true;
 
-  try
-  {
-    m_priv_nh.param<std::string>("can_device_name", can_device_name, "/dev/pcanusb1");
-    m_priv_nh.getParam("chain_names", chain_names);
-    ros::param::get("~use_ros_control", m_use_ros_control);
-  }
-  catch (ros::InvalidNameException e)
-  {
-    ROS_ERROR("Parameter Error! ");
-  }
+  m_priv_nh.param<std::string>("can_device_name", can_device_name, "/dev/pcanusb1");
+  m_priv_nh.getParam("chain_names", chain_names);
+  ros::param::get("~use_ros_control", m_use_ros_control);
+  m_priv_nh.getParam("ppm_profile_velocity", config.profile_velocity);
+  m_priv_nh.getParam("ppm_profile_acceleration", config.profile_acceleration);
+  m_priv_nh.getParam("ppm_use_relative_targets", config.use_relative_targets);
+  m_priv_nh.getParam("ppm_change_set_immediately", config.change_set_immediately);
+  m_priv_nh.getParam("ppm_use_blending", config.use_blending);
+
+  ROS_INFO_STREAM ("Profile_acceleration is " << config.profile_acceleration);
 
   // Create a canopen controller
   m_controller = boost::make_shared<CanOpenController>(can_device_name);
