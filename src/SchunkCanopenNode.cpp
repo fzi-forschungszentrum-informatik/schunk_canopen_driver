@@ -385,51 +385,47 @@ void SchunkCanopenNode::rosControlLoop()
   size_t counter = 0;
 
   while (ros::ok() && !m_homing_active) {
-    if (!m_homing_active)
+    current_time = ros::Time::now();
+    elapsed_time = current_time - last_time;
+    last_time = current_time;
+    // Input
+    m_hardware_interface->read();
+    sensor_msgs::JointState joint_msg = m_hardware_interface->getJointMessage();
+    if (m_joint_pub)
     {
-      current_time = ros::Time::now();
-      elapsed_time = current_time - last_time;
-      last_time = current_time;
-      // Input
-      m_hardware_interface->read();
-      sensor_msgs::JointState joint_msg = m_hardware_interface->getJointMessage();
-      if (m_joint_pub)
-      {
-        m_joint_pub.publish (joint_msg);
-      }
-      if (m_hardware_interface->isFault())
-      {
-        ROS_ERROR ("Some nodes are in FAULT state! No output will be sent. Once the fault is removed, call the enable_nodes service.");
-        m_is_enabled = false;
-      }
-      // Control
-      m_controller->syncAll();
-      if (m_was_disabled && m_is_enabled)
-      {
-        ROS_INFO ("Recovering from FAULT state. Resetting controller");
-        m_controller_manager->update(current_time, elapsed_time, true);
-        m_was_disabled = false;
-      }
-      else if (m_is_enabled)
-      {
-        m_controller_manager->update(current_time, elapsed_time);
-        /* Give the controller some time, otherwise it will send a 0 waypoint vector which
-         * might lead into a following error, if joints are not at 0
-         * TODO: Find a better solution for that.
-         */
-        if (counter > 20)
-        {
-        // Output
-          m_hardware_interface->write();
-        }
-      }
-
-  //     node->printStatus();
-
-
-      ++counter;
-
+      m_joint_pub.publish (joint_msg);
     }
+    if (m_hardware_interface->isFault())
+    {
+      ROS_ERROR ("Some nodes are in FAULT state! No output will be sent. Once the fault is removed, call the enable_nodes service.");
+      m_is_enabled = false;
+    }
+    // Control
+    m_controller->syncAll();
+    if (m_was_disabled && m_is_enabled)
+    {
+      ROS_INFO ("Recovering from FAULT state. Resetting controller");
+      m_controller_manager->update(current_time, elapsed_time, true);
+      m_was_disabled = false;
+    }
+    else if (m_is_enabled)
+    {
+      m_controller_manager->update(current_time, elapsed_time);
+      /* Give the controller some time, otherwise it will send a 0 waypoint vector which
+       * might lead into a following error, if joints are not at 0
+       * TODO: Find a better solution for that.
+       */
+      if (counter > 20)
+      {
+      // Output
+        m_hardware_interface->write();
+      }
+    }
+
+//     node->printStatus();
+
+
+    ++counter;
     usleep(10000);
   }
 
