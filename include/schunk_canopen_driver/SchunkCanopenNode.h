@@ -58,6 +58,8 @@ private:
   ros::ServiceServer m_quick_stop_service;
   ros::ServiceServer m_home_service;
 
+  ros::Publisher m_joint_pub;
+
 
   CanOpenController::Ptr m_controller;
 

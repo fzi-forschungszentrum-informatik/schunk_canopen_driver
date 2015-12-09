@@ -127,4 +127,16 @@ void SchunkCanopenHardwareInterface::doSwitch(const std::list< hardware_interfac
     hardware_interface::RobotHW::doSwitch(start_list, stop_list);
 }
 
+sensor_msgs::JointState SchunkCanopenHardwareInterface::getJointMessage()
+{
+  sensor_msgs::JointState joint_msg;
+  joint_msg.name = m_joint_names;
+  joint_msg.header.stamp = ros::Time::now();
+  joint_msg.position = m_joint_positions;
+  joint_msg.velocity = m_joint_velocity;
+  joint_msg.effort = m_joint_effort;
+
+  return joint_msg;
+}
+
 

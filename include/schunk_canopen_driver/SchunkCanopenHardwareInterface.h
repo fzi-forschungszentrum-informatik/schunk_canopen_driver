@@ -22,6 +22,7 @@
 #include <hardware_interface/robot_hw.h>
 #include <controller_manager/controller_manager.h>
 #include <ros/ros.h>
+#include <sensor_msgs/JointState.h>
 
 using namespace icl_hardware;
 using namespace canopen_schunk;
@@ -48,6 +49,7 @@ public:
 
   bool isFault() {return m_is_fault;}
 
+  sensor_msgs::JointState getJointMessage();
 protected:
   ros::NodeHandle m_node_handle;
   boost::shared_ptr<CanOpenController> m_canopen_controller;

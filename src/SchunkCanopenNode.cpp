@@ -139,7 +139,7 @@ SchunkCanopenNode::SchunkCanopenNode()
   }
 
   // Create joint state publisher
-  // TODO:  write me
+  m_joint_pub = m_pub_nh.advertise<sensor_msgs::JointState>("joint_states", 1);
 
   // services
   m_enable_service =  m_pub_nh.advertiseService("enable_nodes", &SchunkCanopenNode::enableNodes, this);
@@ -202,6 +202,7 @@ void SchunkCanopenNode::trajThread(actionlib::ServerGoalHandle< control_msgs::Fo
 
   for (size_t waypoint = 0; waypoint < gh.getGoal()->trajectory.points.size(); ++waypoint)
   {
+    sensor_msgs::JointState joint_msg;
     feedback.feedback.desired.positions.clear();
     feedback.feedback.joint_names.clear();
     feedback.feedback.actual.positions.clear();
@@ -226,9 +227,11 @@ void SchunkCanopenNode::trajThread(actionlib::ServerGoalHandle< control_msgs::Fo
       m_controller->getNode<SchunkPowerBallNode>(nr)->setTarget(pos);
       feedback.feedback.desired.positions.push_back(pos);
       feedback.feedback.joint_names.push_back(gh.getGoal()->trajectory.joint_names[i]);
+      joint_msg.name.push_back(gh.getGoal()->trajectory.joint_names[i]);
 
       pos = node->getTargetFeedback();
       feedback.feedback.actual.positions.push_back(pos);
+      joint_msg.position.push_back(pos);
     }
     ros::Duration max_time = gh.getGoal()->goal_time_tolerance;
 
@@ -263,11 +266,14 @@ void SchunkCanopenNode::trajThread(actionlib::ServerGoalHandle< control_msgs::Fo
   //       );
         feedback.feedback.actual.time_from_start = spent_time;
         feedback.feedback.actual.positions.at(i) = (pos);
+        joint_msg.position.at(i) = pos;
       }
 
 
       gh.publishFeedback(feedback.feedback);
       targets_reached = waypoint_reached;
+
+      m_joint_pub.publish(joint_msg);
 
 
       if (waypoint_reached)
@@ -372,6 +378,11 @@ void SchunkCanopenNode::rosControlLoop()
       last_time = current_time;
       // Input
       m_hardware_interface->read();
+      sensor_msgs::JointState joint_msg = m_hardware_interface->getJointMessage();
+      if (m_joint_pub)
+      {
+        m_joint_pub.publish (joint_msg);
+      }
       if (m_hardware_interface->isFault())
       {
         ROS_ERROR ("Some nodes are in FAULT state! No output will be sent. Once the fault is removed, call the enable_nodes service.");
