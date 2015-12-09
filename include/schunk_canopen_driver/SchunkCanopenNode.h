@@ -45,10 +45,12 @@ private:
   ros::NodeHandle m_priv_nh;
   ros::NodeHandle m_pub_nh;
 
+  // Action interfaces for standalone mode (without ros_control)
   void goalCB(actionlib::ServerGoalHandle<control_msgs::FollowJointTrajectoryAction> gh);
   void cancelCB(actionlib::ServerGoalHandle<control_msgs::FollowJointTrajectoryAction> gh);
   void trajThread(actionlib::ServerGoalHandle< control_msgs::FollowJointTrajectoryAction >& gh);
 
+  // Service callback handlers
   bool enableNodes(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp);
   bool quickStopNodes(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp);
   bool homeNodesCanIds(schunk_canopen_driver::HomeWithIDsRequest& req,

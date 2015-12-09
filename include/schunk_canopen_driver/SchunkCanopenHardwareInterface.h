@@ -27,6 +27,10 @@
 using namespace icl_hardware;
 using namespace canopen_schunk;
 
+/*!
+ * \brief This class defines a ros-control hardware interface.
+ *
+ */
 class SchunkCanopenHardwareInterface : public hardware_interface::RobotHW
 {
 public:
@@ -47,9 +51,16 @@ public:
   void doSwitch(const std::list<hardware_interface::ControllerInfo>&start_list,
       const std::list<hardware_interface::ControllerInfo>&stop_list);
 
+  /*!
+   * \brief Returns true, when at least one node in the hardware is in a fault state.
+   */
   bool isFault() {return m_is_fault;}
 
+  /*!
+   * \brief Creates a joint_state message from the current joint angles and returns it.
+   */
   sensor_msgs::JointState getJointMessage();
+
 protected:
   ros::NodeHandle m_node_handle;
   boost::shared_ptr<CanOpenController> m_canopen_controller;
