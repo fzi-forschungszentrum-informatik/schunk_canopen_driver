@@ -64,7 +64,9 @@ add_definitions( ${icl_core_DEFINITIONS} )
 ## Generate services in the 'srv' folder
 add_service_files(
    FILES
-   Home.srv
+   HomeAll.srv
+   HomeWithIDs.srv
+   HomeWithJointNames.srv
 )
 
 ## Generate actions in the 'action' folder

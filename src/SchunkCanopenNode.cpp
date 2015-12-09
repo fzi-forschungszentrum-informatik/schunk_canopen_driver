@@ -92,6 +92,12 @@ SchunkCanopenNode::SchunkCanopenNode()
     {
       ROS_INFO_STREAM ("Node " << chain[j]);
       m_controller->addNode<SchunkPowerBallNode>(chain[j], chain_names[i]);
+
+      std::string joint_name = "";
+      std::string mapping_key = "~node_mapping_" + boost::lexical_cast<std::string>( chain[j]);
+      ros::param::get(mapping_key, joint_name);
+
+      m_joint_name_mapping[joint_name] =  static_cast<uint8_t>(chain[j]);
     }
   }
 
@@ -144,7 +150,9 @@ SchunkCanopenNode::SchunkCanopenNode()
   // services
   m_enable_service =  m_pub_nh.advertiseService("enable_nodes", &SchunkCanopenNode::enableNodes, this);
   m_quick_stop_service =  m_pub_nh.advertiseService("quick_stop_nodes", &SchunkCanopenNode::quickStopNodes, this);
-  m_home_service = m_pub_nh.advertiseService("home_reset_offset", &SchunkCanopenNode::homeNodes, this);
+  m_home_service_all = m_pub_nh.advertiseService("home_reset_offset_all", &SchunkCanopenNode::homeAllNodes, this);
+  m_home_service_joint_names = m_pub_nh.advertiseService("home_reset_offset_by_id", &SchunkCanopenNode::homeNodesCanIds, this);
+  m_home_service_canopen_ids = m_pub_nh.advertiseService("home_reset_offset_by_name", &SchunkCanopenNode::homeNodesJointNames, this);
 
   ros::Rate loop_rate(frequency);
 
@@ -464,7 +472,46 @@ bool SchunkCanopenNode::quickStopNodes(std_srvs::TriggerRequest& req, std_srvs::
   return true;
 }
 
-bool SchunkCanopenNode::homeNodes(schunk_canopen_driver::HomeRequest& req, schunk_canopen_driver::HomeResponse& resp)
+bool SchunkCanopenNode::homeAllNodes(schunk_canopen_driver::HomeAllRequest& req,
+                                     schunk_canopen_driver::HomeAllResponse& resp)
+{
+  schunk_canopen_driver::HomeWithIDsRequest req_fwd;
+  schunk_canopen_driver::HomeWithIDsResponse resp_fwd;
+  req_fwd.node_ids = m_controller->getNodeList();
+
+
+  homeNodesCanIds (req_fwd, resp_fwd);
+  resp.success = resp_fwd.success;
+  return resp.success;
+}
+
+
+bool SchunkCanopenNode::homeNodesJointNames(schunk_canopen_driver::HomeWithJointNamesRequest& req,
+                                            schunk_canopen_driver::HomeWithJointNamesResponse& resp)
+{
+  schunk_canopen_driver::HomeWithIDsRequest req_fwd;
+  schunk_canopen_driver::HomeWithIDsResponse resp_fwd;
+  for (std::vector<std::string>::iterator it = req.joint_names.begin();
+       it != req.joint_names.end();
+  ++it)
+  {
+    if (m_joint_name_mapping.find(*it) != m_joint_name_mapping.end())
+    {
+      req_fwd.node_ids.push_back(m_joint_name_mapping[*it]);
+    }
+    else
+    {
+      ROS_ERROR_STREAM ("Could not find joint " << *it << ". No homing will be performed for this joint.");
+    }
+  }
+  homeNodesCanIds (req_fwd, resp_fwd);
+  resp.success = resp_fwd.success;
+  return resp.success;
+}
+
+
+bool SchunkCanopenNode::homeNodesCanIds(schunk_canopen_driver::HomeWithIDsRequest& req,
+                                        schunk_canopen_driver::HomeWithIDsResponse& resp)
 {
   try
   {
@@ -502,6 +549,9 @@ bool SchunkCanopenNode::homeNodes(schunk_canopen_driver::HomeRequest& req, schun
   {
     m_ros_control_thread = boost::thread(&SchunkCanopenNode::rosControlLoop, this);
   }
+
+  resp.success = true;
+  return resp.success;
 }
 
 

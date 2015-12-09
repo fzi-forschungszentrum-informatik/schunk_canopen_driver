@@ -23,7 +23,9 @@
 #include "actionlib/server/action_server.h"
 #include "actionlib/server/server_goal_handle.h"
 #include "std_srvs/Trigger.h"
-#include "schunk_canopen_driver/Home.h"
+#include "schunk_canopen_driver/HomeAll.h"
+#include "schunk_canopen_driver/HomeWithIDs.h"
+#include "schunk_canopen_driver/HomeWithJointNames.h"
 
 
 #include "SchunkCanopenHardwareInterface.h"
@@ -49,14 +51,21 @@ private:
 
   bool enableNodes(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp);
   bool quickStopNodes(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp);
-  bool homeNodes(schunk_canopen_driver::HomeRequest& req, schunk_canopen_driver::HomeResponse& resp);
+  bool homeNodesCanIds(schunk_canopen_driver::HomeWithIDsRequest& req,
+                       schunk_canopen_driver::HomeWithIDsResponse& resp);
+  bool homeNodesJointNames(schunk_canopen_driver::HomeWithJointNamesRequest& req,
+                           schunk_canopen_driver::HomeWithJointNamesResponse& resp);
+  bool homeAllNodes(schunk_canopen_driver::HomeAllRequest& req,
+                    schunk_canopen_driver::HomeAllResponse& resp);
 
   void rosControlLoop ();
 
   actionlib::ActionServer<control_msgs::FollowJointTrajectoryAction> m_action_server;
   ros::ServiceServer m_enable_service;
   ros::ServiceServer m_quick_stop_service;
-  ros::ServiceServer m_home_service;
+  ros::ServiceServer m_home_service_all;
+  ros::ServiceServer m_home_service_joint_names;
+  ros::ServiceServer m_home_service_canopen_ids;
 
   ros::Publisher m_joint_pub;
 
@@ -64,6 +73,7 @@ private:
   CanOpenController::Ptr m_controller;
 
   std::vector<DS402Group::Ptr> m_chain_handles;
+  std::map<std::string, uint8_t> m_joint_name_mapping;
   bool m_has_goal;
   boost::thread m_traj_thread;
   boost::thread m_ros_control_thread;
