@@ -432,6 +432,8 @@ void SchunkCanopenNode::rosControlLoop()
     }
     usleep(10000);
   }
+
+  ROS_INFO ("Shutting down ros_control_loop thread.");
 }
 
 bool SchunkCanopenNode::enableNodes(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp)
@@ -568,15 +570,15 @@ bool SchunkCanopenNode::homeNodesCanIds(schunk_canopen_driver::HomeWithIDsReques
       ROS_ERROR_STREAM ( "Error while homing node " << static_cast<int>(id) << ": " << e.what());
     }
   }
-  m_homing_active = false;
-  m_was_disabled = true;
-  m_is_enabled = true;
 
   if (m_use_ros_control)
   {
     m_ros_control_thread = boost::thread(&SchunkCanopenNode::rosControlLoop, this);
   }
 
+  m_homing_active = false;
+  m_was_disabled = true;
+  m_is_enabled = true;
   resp.success = true;
   return resp.success;
 }
