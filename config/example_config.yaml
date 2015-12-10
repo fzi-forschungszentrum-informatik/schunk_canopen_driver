@@ -1,5 +1,8 @@
+# Quite arbitrary group name
 chain_names: ["arm"]
+# canopen ids that will be used. Remember to list a mapping in node_mapping.yaml
 chain_arm: [3, 4, 5, 6, 7, 8]
+# state publisher frequency
 frequency: 30
 
 # the following options do only apply, when ros_control is NOT used!
@@ -7,4 +10,3 @@ ppm_profile_velocity: 0.3
 ppm_profile_acceleration: 0.3
 # if set to true, command positions will be interpreted relative to the current position
 ppm_use_relative_targets: false
-

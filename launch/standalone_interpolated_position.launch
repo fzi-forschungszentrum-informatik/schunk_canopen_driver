@@ -1,10 +1,14 @@
 <?xml version="1.0"?>
+<!-- File description
+  For executing more complex trajectories the interpolated position mode with
+  ros_control offers a very powerful, yet effective command interface.
+  It offers a FollowJointTrajectory interface as well as multiple services
+  for handling the robot.
+ -->
 <launch>
-  <arg name="frequency" default="30" />
   <arg name="pcan_device" default="/dev/pcanusb1" />
 
   <include file="$(find schunk_canopen_driver)/launch/driver.launch">
-    <arg name="frequency" value="$(arg frequency)" />
     <arg name="pcan_device" value="$(arg pcan_device)" />
     <arg name="with_ros_control" value="True" />
     <arg name="do_autostart" value="True" />

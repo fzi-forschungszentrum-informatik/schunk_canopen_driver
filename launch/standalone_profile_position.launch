@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!-- File description
+  This launchfile shows the simplest usage of the driver. In this mode, single
+  joint configurations can be commanded very simply with an action interface.
+  This might be useful, if you only want to command a single configuration or
+  calibrate the nodes' zero position.
+  For executing more complex trajectories we suggest the use of the interpolated
+  position mode which uses ros_control.
+ -->
+<launch>
+  <arg name="pcan_device" default="/dev/pcanusb1" />
+
+  <include file="$(find schunk_canopen_driver)/launch/driver.launch">
+    <arg name="pcan_device" value="$(arg pcan_device)" />
+    <arg name="with_ros_control" value="false" />
+    <arg name="do_autostart" value="true" />
+  </include>
+
+  <!-- robot model -->
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find schunk_description)/urdf/lwa4p/arm.urdf.xacro'" />
+
+  <!--   Convert joint states to /tf tranforms -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+</launch>
