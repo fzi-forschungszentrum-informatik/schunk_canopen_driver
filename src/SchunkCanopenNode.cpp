@@ -34,7 +34,8 @@ SchunkCanopenNode::SchunkCanopenNode()
     m_use_ros_control(false),
     m_was_disabled(true),
     m_is_enabled(false),
-    m_homing_active(false)
+    m_homing_active(false),
+    m_nodes_initialized(false)
 {
   std::string can_device_name;
   uint8_t first_node;
@@ -43,31 +44,33 @@ SchunkCanopenNode::SchunkCanopenNode()
   std::map<std::string, std::vector<int> > chain_configuratuions;
   m_chain_handles.clear();
   sensor_msgs::JointState joint_msg;
+  bool autostart = true;
 
-  ds402::ProfilePositionModeConfiguration config;
-  config.profile_acceleration = 0.2;
-  config.profile_velocity = 0.2;
-  config.use_relative_targets = false;
-  config.change_set_immediately = true;
-  config.use_blending = true;
+  m_ppm_config.profile_acceleration = 0.2;
+  m_ppm_config.profile_velocity = 0.2;
+  m_ppm_config.use_relative_targets = false;
+  m_ppm_config.change_set_immediately = true;
+  m_ppm_config.use_blending = true;
 
   m_priv_nh.param<std::string>("can_device_name", can_device_name, "/dev/pcanusb1");
   m_priv_nh.getParam("chain_names", chain_names);
   ros::param::get("~use_ros_control", m_use_ros_control);
-  m_priv_nh.getParam("ppm_profile_velocity", config.profile_velocity);
-  m_priv_nh.getParam("ppm_profile_acceleration", config.profile_acceleration);
-  m_priv_nh.getParam("ppm_use_relative_targets", config.use_relative_targets);
-  m_priv_nh.getParam("ppm_change_set_immediately", config.change_set_immediately);
-  m_priv_nh.getParam("ppm_use_blending", config.use_blending);
-
-  // Load SCHUNK powerball specific error codes
-  std::string emcy_emergency_errors_filename =
-   boost::filesystem::path(std::getenv("CANOPEN_RESOURCE_PATH") /
-   boost::filesystem::path("EMCY_schunk.ini")).string();
-  EMCY::addEmergencyErrorMap( emcy_emergency_errors_filename, "schunk_error_codes");
+  m_priv_nh.getParam("ppm_profile_velocity", m_ppm_config.profile_velocity);
+  m_priv_nh.getParam("ppm_profile_acceleration", m_ppm_config.profile_acceleration);
+  m_priv_nh.getParam("ppm_use_relative_targets", m_ppm_config.use_relative_targets);
+  m_priv_nh.getParam("ppm_change_set_immediately", m_ppm_config.change_set_immediately);
+  m_priv_nh.getParam("ppm_use_blending", m_ppm_config.use_blending);
+  m_priv_nh.getParam("autostart", autostart);
 
   // Create a canopen controller
   m_controller = boost::make_shared<CanOpenController>(can_device_name);
+
+  // Load SCHUNK powerball specific error codes
+  std::string emcy_emergency_errors_filename =
+  boost::filesystem::path(std::getenv("CANOPEN_RESOURCE_PATH") /
+  boost::filesystem::path("EMCY_schunk.ini")).string();
+  EMCY::addEmergencyErrorMap( emcy_emergency_errors_filename, "schunk_error_codes");
+
 
   // Get chain configuration from parameter server
   ROS_INFO_STREAM ("Can device identifier: " << can_device_name);
@@ -108,11 +111,61 @@ SchunkCanopenNode::SchunkCanopenNode()
     }
   }
 
-
-  for (size_t i = 0; i < m_chain_handles.size(); ++i)
+  if (autostart)
   {
-    m_chain_handles[i]->setupProfilePositionMode(config);
+    initDevices();
   }
+  else
+  {
+    m_init_service = m_pub_nh.advertiseService("init_devices",
+     &SchunkCanopenNode::initDevicesCb, this);
+  }
+
+
+  ros::Rate loop_rate(frequency);
+
+  DS402Node::Ptr node;
+  std_msgs::Int16MultiArray currents;
+  while (ros::ok())
+  {
+    ros::spinOnce();
+
+    if (m_nodes_initialized)
+    {
+      joint_msg.position.clear();
+      currents.data.clear();
+      for (std::map<std::string, uint8_t>::iterator it = m_joint_name_mapping.begin();
+           it != m_joint_name_mapping.end();
+           ++it)
+      {
+        const uint8_t& nr = it->second;
+        node = m_controller->getNode<DS402Node>(nr);
+        joint_msg.position.push_back(node->getTargetFeedback());
+
+        // Schunk nodes write currents into the torque_actual register
+        currents.data.push_back(node->getTPDOValue<int16_t>("measured_torque"));
+      }
+      joint_msg.header.stamp = ros::Time::now();
+      m_joint_pub.publish(joint_msg);
+
+      m_current_pub.publish(currents);
+    }
+    loop_rate.sleep();
+  }
+}
+
+
+bool SchunkCanopenNode::initDevicesCb(std_srvs::TriggerRequest& req,
+                                      std_srvs::TriggerResponse& resp)
+{
+  initDevices();
+  resp.success = true;
+  return resp.success;
+}
+
+
+void SchunkCanopenNode::initDevices()
+{
 
   // initialize all nodes, by default this will start ProfilePosition mode, so we're good to enable nodes
   m_controller->initNodes();
@@ -138,15 +191,16 @@ SchunkCanopenNode::SchunkCanopenNode()
     for (size_t i = 0; i < m_chain_handles.size(); ++i)
     {
       try {
+        m_chain_handles[i]->setupProfilePositionMode(m_ppm_config);
         m_chain_handles[i]->enableNodes(mode);
       }
       catch (const ProtocolException& e)
       {
         ROS_ERROR_STREAM ("Caught ProtocolException while enabling nodes from chain " <<
-          chain_names[i] << ". Nodes from this group won't be enabled.");
+          m_chain_handles[i]->getName() << ". Nodes from this group won't be enabled.");
         continue;
       }
-      ROS_INFO_STREAM ("Enabled nodes from chain " << chain_names[i]);
+      ROS_INFO_STREAM ("Enabled nodes from chain " << m_chain_handles[i]->getName());
     }
     m_action_server.start();
   }
@@ -168,34 +222,9 @@ SchunkCanopenNode::SchunkCanopenNode()
   m_home_service_canopen_ids = m_pub_nh.advertiseService("home_reset_offset_by_name",
      &SchunkCanopenNode::homeNodesJointNames, this);
 
-  ros::Rate loop_rate(frequency);
-
-  DS402Node::Ptr node;
-  std_msgs::Int16MultiArray currents;
-  while (ros::ok())
-  {
-    ros::spinOnce();
-
-    joint_msg.position.clear();
-    currents.data.clear();
-    for (std::map<std::string, uint8_t>::iterator it = m_joint_name_mapping.begin();
-         it != m_joint_name_mapping.end();
-         ++it)
-    {
-      const uint8_t& nr = it->second;
-      node = m_controller->getNode<DS402Node>(nr);
-      joint_msg.position.push_back(node->getTargetFeedback());
-
-      // Schunk nodes write currents into the torque_actual register
-      currents.data.push_back(node->getTPDOValue<int16_t>("measured_torque"));
-    }
-    joint_msg.header.stamp = ros::Time::now();
-    m_joint_pub.publish(joint_msg);
-
-    m_current_pub.publish(currents);
-    loop_rate.sleep();
-  }
+  m_nodes_initialized = true;
 }
+
 
 void SchunkCanopenNode::goalCB (actionlib::ServerGoalHandle< control_msgs::FollowJointTrajectoryAction > gh)
 {

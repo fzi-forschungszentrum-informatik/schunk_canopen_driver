@@ -61,7 +61,12 @@ private:
                     schunk_canopen_driver::HomeAllResponse& resp);
   bool closeBrakes (std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp);
 
+  bool initDevicesCb (std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp);
+
+  void initDevices();
+
   void rosControlLoop ();
+
 
   actionlib::ActionServer<control_msgs::FollowJointTrajectoryAction> m_action_server;
   ros::ServiceServer m_enable_service;
@@ -70,6 +75,7 @@ private:
   ros::ServiceServer m_home_service_all;
   ros::ServiceServer m_home_service_joint_names;
   ros::ServiceServer m_home_service_canopen_ids;
+  ros::ServiceServer m_init_service;
 
   ros::Publisher m_joint_pub;
   ros::Publisher m_current_pub;
@@ -91,6 +97,9 @@ private:
   bool m_was_disabled;
   bool m_is_enabled;
   bool m_homing_active;
+
+  ds402::ProfilePositionModeConfiguration m_ppm_config;
+  bool m_nodes_initialized;
 
 };
 

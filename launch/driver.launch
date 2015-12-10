@@ -7,15 +7,17 @@
 
   <arg name="frequency" default="30" />
   <arg name="pcan_device" default="/dev/pcanusb1" />
-  <arg name="with_ros_control" default="false" />
+  <arg name="with_ros_control" default="true" />
+  <arg name="do_autostart" default="true" />
 
   <node name="schunk_canopen_node" pkg="schunk_canopen_driver" type="schunk_canopen_driver_node" output="screen" launch-prefix="$(arg launch_prefix)">
     <!--   Set env variable for the error codes   -->
     <env name="CANOPEN_RESOURCE_PATH" value="$(find schunk_canopen_driver)/etc/error_codes" />
     <param name="frequency"           type="int"      value="$(arg frequency)" />
     <param name="can_device_name"          type="string"   value="$(arg pcan_device)"   />
+    <param name="autostart"          type="bool"   value="$(arg do_autostart)"   />
+    <param name="use_ros_control" type="bool" value="$(arg with_ros_control)"/>
     <rosparam command="load" file="$(find schunk_canopen_driver)/config/example_config.yaml"/>
     <rosparam command="load" file="$(find schunk_canopen_driver)/config/node_mapping.yaml"/>
-    <param name="use_ros_control" type="bool" value="$(arg with_ros_control)"/>
   </node>
 </launch>

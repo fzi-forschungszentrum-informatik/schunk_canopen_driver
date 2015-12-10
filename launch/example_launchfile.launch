@@ -6,6 +6,8 @@
   <include file="$(find schunk_canopen_driver)/launch/driver.launch">
     <arg name="frequency" value="$(arg frequency)" />
     <arg name="pcan_device" value="$(arg pcan_device)" />
+    <arg name="with_ros_control" value="false" />
+    <arg name="do_autostart" value="true" />
   </include>
 
   <!--   Convert joint states to /tf tranforms -->
