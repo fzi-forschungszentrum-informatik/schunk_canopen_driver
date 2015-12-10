@@ -72,6 +72,7 @@ private:
   ros::ServiceServer m_home_service_canopen_ids;
 
   ros::Publisher m_joint_pub;
+  ros::Publisher m_current_pub;
 
 
   CanOpenController::Ptr m_controller;

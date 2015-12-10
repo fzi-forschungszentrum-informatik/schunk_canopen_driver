@@ -15,6 +15,7 @@
 
 #include "control_msgs/FollowJointTrajectoryActionFeedback.h"
 #include "ros/service_server.h"
+#include "std_msgs/Int16MultiArray.h"
 
 
 #include "schunk_canopen_driver/SchunkCanopenNode.h"
@@ -127,19 +128,6 @@ SchunkCanopenNode::SchunkCanopenNode()
   }
 
   // Start interface (either action server or ros_control)
-  for (size_t i = 0; i < m_chain_handles.size(); ++i)
-  {
-    try {
-      m_chain_handles[i]->enableNodes(mode);
-    }
-    catch (const ProtocolException& e)
-    {
-      ROS_ERROR_STREAM ("Caught ProtocolException while enabling nodes from chain " <<
-        chain_names[i] << ". Nodes from this group won't be enabled.");
-      continue;
-    }
-    ROS_INFO_STREAM ("Enabled nodes from chain " << chain_names[i]);
-  }
 
   if (m_use_ros_control)
   {
@@ -147,11 +135,25 @@ SchunkCanopenNode::SchunkCanopenNode()
   }
   else
   {
+    for (size_t i = 0; i < m_chain_handles.size(); ++i)
+    {
+      try {
+        m_chain_handles[i]->enableNodes(mode);
+      }
+      catch (const ProtocolException& e)
+      {
+        ROS_ERROR_STREAM ("Caught ProtocolException while enabling nodes from chain " <<
+          chain_names[i] << ". Nodes from this group won't be enabled.");
+        continue;
+      }
+      ROS_INFO_STREAM ("Enabled nodes from chain " << chain_names[i]);
+    }
     m_action_server.start();
   }
 
   // Create joint state publisher
   m_joint_pub = m_pub_nh.advertise<sensor_msgs::JointState>("joint_states", 1);
+  m_current_pub = m_pub_nh.advertise<std_msgs::Int16MultiArray>("joint_currents", 1);
 
   // services
   m_enable_service =  m_pub_nh.advertiseService("enable_nodes", &SchunkCanopenNode::enableNodes, this);
@@ -169,11 +171,13 @@ SchunkCanopenNode::SchunkCanopenNode()
   ros::Rate loop_rate(frequency);
 
   DS402Node::Ptr node;
+  std_msgs::Int16MultiArray currents;
   while (ros::ok())
   {
     ros::spinOnce();
 
     joint_msg.position.clear();
+    currents.data.clear();
     for (std::map<std::string, uint8_t>::iterator it = m_joint_name_mapping.begin();
          it != m_joint_name_mapping.end();
          ++it)
@@ -181,9 +185,14 @@ SchunkCanopenNode::SchunkCanopenNode()
       const uint8_t& nr = it->second;
       node = m_controller->getNode<DS402Node>(nr);
       joint_msg.position.push_back(node->getTargetFeedback());
+
+      // Schunk nodes write currents into the torque_actual register
+      currents.data.push_back(node->getTPDOValue<int16_t>("measured_torque"));
     }
     joint_msg.header.stamp = ros::Time::now();
     m_joint_pub.publish(joint_msg);
+
+    m_current_pub.publish(currents);
     loop_rate.sleep();
   }
 }
