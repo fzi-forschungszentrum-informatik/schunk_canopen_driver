@@ -59,7 +59,11 @@ SchunkCanopenNode::SchunkCanopenNode()
   m_priv_nh.getParam("ppm_change_set_immediately", config.change_set_immediately);
   m_priv_nh.getParam("ppm_use_blending", config.use_blending);
 
-  ROS_INFO_STREAM ("Profile_acceleration is " << config.profile_acceleration);
+  // Load SCHUNK powerball specific error codes
+  std::string emcy_emergency_errors_filename =
+   boost::filesystem::path(std::getenv("CANOPEN_RESOURCE_PATH") /
+   boost::filesystem::path("EMCY_schunk.ini")).string();
+  EMCY::addEmergencyErrorMap( emcy_emergency_errors_filename, "schunk_error_codes");
 
   // Create a canopen controller
   m_controller = boost::make_shared<CanOpenController>(can_device_name);

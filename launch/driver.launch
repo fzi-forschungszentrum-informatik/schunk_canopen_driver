@@ -10,6 +10,8 @@
   <arg name="with_ros_control" default="false" />
 
   <node name="schunk_canopen_node" pkg="schunk_canopen_driver" type="schunk_canopen_driver_node" output="screen" launch-prefix="$(arg launch_prefix)">
+    <!--   Set env variable for the error codes   -->
+    <env name="CANOPEN_RESOURCE_PATH" value="$(find schunk_canopen_driver)/etc/error_codes" />
     <param name="frequency"           type="int"      value="$(arg frequency)" />
     <param name="can_device_name"          type="string"   value="$(arg pcan_device)"   />
     <rosparam command="load" file="$(find schunk_canopen_driver)/config/example_config.yaml"/>
