@@ -3,13 +3,10 @@
   <arg name="frequency" default="30" />
   <arg name="pcan_device" default="/dev/pcanusb1" />
 
-  <node name="schunk_canopen_node" pkg="schunk_canopen_driver" type="schunk_canopen_driver_node" output="screen">
-    <param name="frequency"           type="int"      value="$(arg frequency)" />
-    <param name="can_device_name"          type="string"   value="$(arg pcan_device)"   />
-    <rosparam command="load" file="$(find schunk_canopen_driver)/config/example_config.yaml"/>
-    <rosparam command="load" file="$(find schunk_canopen_driver)/config/node_mapping.yaml"/>
-    <param name="use_ros_control" type="bool" value="false"/>
-  </node>
+  <include file="$(find schunk_canopen_driver)/launch/driver.launch">
+    <arg name="frequency" value="$(arg frequency)" />
+    <arg name="pcan_device" value="$(arg pcan_device)" />
+  </include>
 
   <!--   Convert joint states to /tf tranforms -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>

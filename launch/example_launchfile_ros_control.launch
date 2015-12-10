@@ -1,20 +1,13 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- GDB functionality -->
-  <arg name="debug" default="false" />
-  <arg unless="$(arg debug)" name="launch_prefix" value="" />
-  <arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args" />
-
   <arg name="frequency" default="30" />
   <arg name="pcan_device" default="/dev/pcanusb1" />
 
-  <node name="schunk_canopen_node" pkg="schunk_canopen_driver" type="schunk_canopen_driver_node" output="screen" launch-prefix="$(arg launch_prefix)">
-    <param name="frequency"           type="int"      value="$(arg frequency)" />
-    <param name="can_device_name"          type="string"   value="$(arg pcan_device)"   />
-    <rosparam command="load" file="$(find schunk_canopen_driver)/config/example_config.yaml"/>
-    <rosparam command="load" file="$(find schunk_canopen_driver)/config/node_mapping.yaml"/>
-    <param name="use_ros_control" type="bool" value="True"/>
-  </node>
+  <include file="$(find schunk_canopen_driver)/launch/driver.launch">
+    <arg name="frequency" value="$(arg frequency)" />
+    <arg name="pcan_device" value="$(arg pcan_device)" />
+    <arg name="with_ros_control" value="True" />
+  </include>
 
   <!-- robot model -->
   <param name="robot_description" command="$(find xacro)/xacro.py '$(find schunk_description)/urdf/lwa4p/arm.urdf.xacro'" />
