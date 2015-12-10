@@ -107,7 +107,7 @@ void SchunkCanopenHardwareInterface::write()
     }
     if (m_joint_position_commands != m_joint_position_commands_last)
     {
-      ROS_INFO_STREAM ("Commanded positions: " << commanded_positions.str());
+      ROS_DEBUG_STREAM ("Commanded positions: " << commanded_positions.str());
       m_joint_position_commands_last = m_joint_position_commands;
     }
   }
