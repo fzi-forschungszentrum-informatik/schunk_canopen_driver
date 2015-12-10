@@ -392,6 +392,7 @@ void SchunkCanopenNode::rosControlLoop()
       ROS_ERROR_STREAM ("Caught ProtocolException while enabling nodes");
       continue;
     }
+    m_controller->syncAll();
   }
   m_is_enabled = true;
 
