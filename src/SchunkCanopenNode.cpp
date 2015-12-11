@@ -32,7 +32,7 @@ SchunkCanopenNode::SchunkCanopenNode()
     boost::bind(&SchunkCanopenNode::cancelCB, this, _1), false),
     m_has_goal(false),
     m_use_ros_control(false),
-    m_was_disabled(true),
+    m_was_disabled(false),
     m_is_enabled(false),
     m_homing_active(false),
     m_nodes_initialized(false)
@@ -108,7 +108,6 @@ SchunkCanopenNode::SchunkCanopenNode()
     chain_configuratuions[name] = chain;
     for (size_t j = 0; j < chain.size(); ++j)
     {
-      ROS_INFO_STREAM ("Node " << chain[j]);
       m_controller->addNode<SchunkPowerBallNode>(chain[j], chain_names[i]);
 
       std::string joint_name = "";
