@@ -472,9 +472,9 @@ void SchunkCanopenNode::rosControlLoop()
     {
       m_joint_pub.publish (joint_msg);
     }
-    if (m_hardware_interface->isFault())
+    if (m_hardware_interface->isFault() && m_is_enabled)
     {
-      ROS_ERROR ("Some nodes are in FAULT state! No output will be sent. Once the fault is removed, call the enable_nodes service.");
+      ROS_ERROR ("Some nodes are in FAULT state! No commands will be sent. Once the fault is removed, call the enable_nodes service.");
       m_is_enabled = false;
     }
     // Control

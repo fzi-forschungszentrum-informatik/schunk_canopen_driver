@@ -28,15 +28,17 @@ SchunkCanopenHardwareInterface::SchunkCanopenHardwareInterface (ros::NodeHandle&
 void SchunkCanopenHardwareInterface::init()
 {
   m_node_ids = m_canopen_controller->getNodeList();
-  m_joint_position_commands.resize(m_node_ids.size());
-  m_joint_position_commands_last.resize(m_node_ids.size());
-  m_joint_positions.resize(m_node_ids.size());
-  m_joint_velocity.resize(m_node_ids.size());
-  m_joint_effort.resize(m_node_ids.size());
+  size_t num_nodes = m_node_ids.size();
+  m_joint_position_commands.resize(num_nodes);
+  m_joint_position_commands_last.resize(num_nodes);
+  m_joint_positions.resize(num_nodes);
+  m_joint_velocity.resize(num_nodes);
+  m_joint_effort.resize(num_nodes);
   m_joint_names.clear();
+  m_nodes_in_fault.resize(num_nodes, false);
 
   // Initialize controller
-  for (std::size_t i = 0; i < m_node_ids.size(); ++i) {
+  for (std::size_t i = 0; i < num_nodes; ++i) {
     std::string joint_name = "";
     std::string mapping_key = "~node_mapping_" + boost::lexical_cast<std::string>(static_cast<int>(m_node_ids[i]));
     ros::param::get(mapping_key, joint_name);
@@ -78,7 +80,15 @@ void SchunkCanopenHardwareInterface::read()
     m_is_fault |= node_status.bit.fault;
     if (node_status.bit.fault)
     {
-      ROS_ERROR_STREAM ("Node " << static_cast<int>(m_node_ids[i]) << " is in FAULT state");
+      if (!m_nodes_in_fault[i])
+      {
+        ROS_ERROR_STREAM ("Node " << static_cast<int>(m_node_ids[i]) << " is in FAULT state");
+      }
+      m_nodes_in_fault[i] = true;
+    }
+    else
+    {
+      m_nodes_in_fault[i] = false;
     }
   }
 }

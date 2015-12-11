@@ -79,6 +79,7 @@ protected:
   std::vector<double> m_joint_position_commands;
   std::vector<double> m_joint_position_commands_last;
 
+  std::vector<bool> m_nodes_in_fault;
   bool m_is_fault;
 };
 
