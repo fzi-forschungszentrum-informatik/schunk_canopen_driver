@@ -63,7 +63,16 @@ SchunkCanopenNode::SchunkCanopenNode()
   m_priv_nh.getParam("autostart", autostart);
 
   // Create a canopen controller
-  m_controller = boost::make_shared<CanOpenController>(can_device_name);
+  try
+  {
+    m_controller = boost::make_shared<CanOpenController>(can_device_name);
+  }
+  catch (const DeviceException& e)
+  {
+    ROS_ERROR_STREAM ("Initializing CAN device failed. Reason: " << e.what());
+    ROS_INFO ("Shutting down now.");
+    return;
+  }
 
   // Load SCHUNK powerball specific error codes
   std::string emcy_emergency_errors_filename =
