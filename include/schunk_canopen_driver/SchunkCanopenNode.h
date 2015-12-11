@@ -160,6 +160,8 @@ private:
   ds402::ProfilePositionModeConfiguration m_ppm_config;
   bool m_nodes_initialized;
 
+  std::string m_traj_controller_name;
+
 };
 
 #endif /* SCHUNK_CANOPEN_NODE_H_ */

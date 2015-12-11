@@ -7,11 +7,14 @@
  -->
 <launch>
   <arg name="pcan_device" default="/dev/pcanusb1" />
+  <arg name="trajectory_controller_name" default="pos_based_pos_traj_controller" />
 
   <include file="$(find schunk_canopen_driver)/launch/driver.launch">
     <arg name="pcan_device" value="$(arg pcan_device)" />
     <arg name="with_ros_control" value="True" />
     <arg name="do_autostart" value="True" />
+    <arg name="controller_name" value="$(arg trajectory_controller_name)" />
+<!--     <arg name="debug" value="true" /> -->
   </include>
 
   <!-- robot model -->
@@ -22,7 +25,7 @@
 
   <!-- spawn controller manager -->
   <node name="ros_control_controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-    output="screen" args="pos_based_pos_traj_controller" />
+    output="screen" args="$(arg trajectory_controller_name)" />
 
   <!-- load other controller -->
   <node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false"

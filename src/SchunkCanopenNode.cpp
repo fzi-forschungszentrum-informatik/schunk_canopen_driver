@@ -35,7 +35,8 @@ SchunkCanopenNode::SchunkCanopenNode()
     m_was_disabled(false),
     m_is_enabled(false),
     m_homing_active(false),
-    m_nodes_initialized(false)
+    m_nodes_initialized(false),
+    m_traj_controller_name("pos_based_pos_traj_controller")
 {
   std::string can_device_name;
   uint8_t first_node;
@@ -61,6 +62,7 @@ SchunkCanopenNode::SchunkCanopenNode()
   m_priv_nh.getParam("ppm_change_set_immediately", m_ppm_config.change_set_immediately);
   m_priv_nh.getParam("ppm_use_blending", m_ppm_config.use_blending);
   m_priv_nh.getParam("autostart", autostart);
+  m_priv_nh.getParam("traj_controller_name", m_traj_controller_name);
 
   // Create a canopen controller
   try
@@ -201,6 +203,7 @@ void SchunkCanopenNode::initDevices()
       new SchunkCanopenHardwareInterface(m_pub_nh, m_controller));
     m_controller_manager.reset(
       new controller_manager::ControllerManager( m_hardware_interface.get(), m_pub_nh));
+
   }
 
   // Start interface (either action server or ros_control)
@@ -511,6 +514,7 @@ void SchunkCanopenNode::rosControlLoop()
 
 bool SchunkCanopenNode::enableNodes(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp)
 {
+  m_controller_manager->getControllerByName(m_traj_controller_name)->startRequest(ros::Time::now());
   try
   {
     for (size_t i = 0; i < m_chain_handles.size(); ++i)
@@ -544,6 +548,7 @@ bool SchunkCanopenNode::closeBrakes(std_srvs::TriggerRequest& req, std_srvs::Tri
   resp.success = true;
   m_was_disabled = true;
   m_is_enabled = false;
+  m_controller_manager->getControllerByName(m_traj_controller_name)->stopRequest(ros::Time::now());
 
   ROS_INFO ("Closed brakes for all nodes. For reenabling, please use the enable_nodes service. Thank you for your attention.");
   return true;
@@ -571,6 +576,7 @@ bool SchunkCanopenNode::quickStopNodes(std_srvs::TriggerRequest& req, std_srvs::
   }
   resp.success = true;
   m_was_disabled = false;
+  m_controller_manager->getControllerByName(m_traj_controller_name)->stopRequest(ros::Time::now());
   ROS_INFO ("Quick stopped all nodes. For reenabling, please use the enable_nodes service. Thank you for your attention.");
   return true;
 }

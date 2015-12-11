@@ -9,6 +9,7 @@
   <arg name="pcan_device" default="/dev/pcanusb1" />
   <arg name="with_ros_control" default="true" />
   <arg name="do_autostart" default="true" />
+  <arg name="controller_name" default="pos_based_pos_traj_controller" />
 
   <node name="schunk_canopen_node" pkg="schunk_canopen_driver" type="schunk_canopen_driver_node" output="screen" launch-prefix="$(arg launch_prefix)">
     <!--   Set env variable for the error codes   -->
@@ -17,6 +18,7 @@
     <param name="can_device_name"          type="string"   value="$(arg pcan_device)"   />
     <param name="autostart"          type="bool"   value="$(arg do_autostart)"   />
     <param name="use_ros_control" type="bool" value="$(arg with_ros_control)"/>
+    <param name="traj_controller_name" type="string" value="$(arg controller_name)"/>
     <rosparam command="load" file="$(find schunk_canopen_driver)/config/example_config.yaml"/>
     <rosparam command="load" file="$(find schunk_canopen_driver)/config/node_mapping.yaml"/>
   </node>
