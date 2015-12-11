@@ -177,7 +177,22 @@ void SchunkCanopenNode::initDevices()
 {
 
   // initialize all nodes, by default this will start ProfilePosition mode, so we're good to enable nodes
-  m_controller->initNodes();
+  try {
+    m_controller->initNodes();
+  }
+  catch (const ProtocolException& e)
+  {
+    ROS_ERROR_STREAM ("Caught ProtocolException while initializing devices: " << e.what());
+    ROS_INFO ("Going to shut down now");
+    exit (-1);
+  }
+
+  catch (const PDOException& e)
+  {
+    ROS_ERROR_STREAM ("Caught ProtocolException while initializing devices: " << e.what());
+    ROS_INFO ("Going to shut down now");
+    exit (-1);
+  }
 
   ds402::eModeOfOperation mode = ds402::MOO_PROFILE_POSITION_MODE;
   if (m_use_ros_control)
