@@ -477,6 +477,7 @@ void SchunkCanopenNode::rosControlLoop()
     }
     if (m_hardware_interface->isFault() && m_is_enabled)
     {
+      m_controller_manager->getControllerByName(m_traj_controller_name)->stopRequest(ros::Time::now());
       ROS_ERROR ("Some nodes are in FAULT state! No commands will be sent. Once the fault is removed, call the enable_nodes service.");
       m_is_enabled = false;
     }
