@@ -125,7 +125,7 @@ SchunkCanopenNode::SchunkCanopenNode()
   }
   else
   {
-    m_init_service = m_pub_nh.advertiseService("init_devices",
+    m_init_service = m_priv_nh.advertiseService("init_devices",
      &SchunkCanopenNode::initDevicesCb, this);
   }
 
@@ -229,20 +229,20 @@ void SchunkCanopenNode::initDevices()
   }
 
   // Create joint state publisher
-  m_joint_pub = m_pub_nh.advertise<sensor_msgs::JointState>("joint_states", 1);
-  m_current_pub = m_pub_nh.advertise<std_msgs::Int16MultiArray>("joint_currents", 1);
+  m_joint_pub = m_priv_nh.advertise<sensor_msgs::JointState>("joint_states", 1);
+  m_current_pub = m_priv_nh.advertise<std_msgs::Int16MultiArray>("joint_currents", 1);
 
   // services
-  m_enable_service =  m_pub_nh.advertiseService("enable_nodes", &SchunkCanopenNode::enableNodes, this);
-  m_close_brakes_service =  m_pub_nh.advertiseService("close_brakes",
+  m_enable_service =  m_priv_nh.advertiseService("enable_nodes", &SchunkCanopenNode::enableNodes, this);
+  m_close_brakes_service =  m_priv_nh.advertiseService("close_brakes",
      &SchunkCanopenNode::closeBrakes, this);
-  m_quick_stop_service =  m_pub_nh.advertiseService("quick_stop_nodes",
+  m_quick_stop_service =  m_priv_nh.advertiseService("quick_stop_nodes",
      &SchunkCanopenNode::quickStopNodes, this);
-  m_home_service_all = m_pub_nh.advertiseService("home_reset_offset_all",
+  m_home_service_all = m_priv_nh.advertiseService("home_reset_offset_all",
      &SchunkCanopenNode::homeAllNodes, this);
-  m_home_service_joint_names = m_pub_nh.advertiseService("home_reset_offset_by_id",
+  m_home_service_joint_names = m_priv_nh.advertiseService("home_reset_offset_by_id",
      &SchunkCanopenNode::homeNodesCanIds, this);
-  m_home_service_canopen_ids = m_pub_nh.advertiseService("home_reset_offset_by_name",
+  m_home_service_canopen_ids = m_priv_nh.advertiseService("home_reset_offset_by_name",
      &SchunkCanopenNode::homeNodesJointNames, this);
 
   m_nodes_initialized = true;
