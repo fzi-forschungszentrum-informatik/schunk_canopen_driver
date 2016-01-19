@@ -35,8 +35,7 @@ SchunkCanopenNode::SchunkCanopenNode()
     m_was_disabled(false),
     m_is_enabled(false),
     m_homing_active(false),
-    m_nodes_initialized(false),
-    m_traj_controller_name("pos_based_pos_traj_controller")
+    m_nodes_initialized(false)
 {
   std::string can_device_name;
   uint8_t first_node;
@@ -47,22 +46,16 @@ SchunkCanopenNode::SchunkCanopenNode()
   sensor_msgs::JointState joint_msg;
   bool autostart = true;
 
-  m_ppm_config.profile_acceleration = 0.2;
-  m_ppm_config.profile_velocity = 0.2;
-  m_ppm_config.use_relative_targets = false;
-  m_ppm_config.change_set_immediately = true;
-  m_ppm_config.use_blending = true;
-
-  m_priv_nh.param<std::string>("can_device_name", can_device_name, "/dev/pcanusb1");
   m_priv_nh.getParam("chain_names", chain_names);
   ros::param::get("~use_ros_control", m_use_ros_control);
-  m_priv_nh.getParam("ppm_profile_velocity", m_ppm_config.profile_velocity);
-  m_priv_nh.getParam("ppm_profile_acceleration", m_ppm_config.profile_acceleration);
-  m_priv_nh.getParam("ppm_use_relative_targets", m_ppm_config.use_relative_targets);
-  m_priv_nh.getParam("ppm_change_set_immediately", m_ppm_config.change_set_immediately);
-  m_priv_nh.getParam("ppm_use_blending", m_ppm_config.use_blending);
-  m_priv_nh.getParam("autostart", autostart);
-  m_priv_nh.getParam("traj_controller_name", m_traj_controller_name);
+  m_priv_nh.param<std::string>("can_device_name", can_device_name, "/dev/pcanusb1");
+  m_priv_nh.param<float>  ("ppm_profile_velocity",       m_ppm_config.profile_velocity,         0.2);
+  m_priv_nh.param<float>  ("ppm_profile_acceleration",   m_ppm_config.profile_acceleration,     0.2);
+  m_priv_nh.param<bool>   ("ppm_use_relative_targets",   m_ppm_config.use_relative_targets,     false);
+  m_priv_nh.param<bool>   ("ppm_change_set_immediately", m_ppm_config.change_set_immediately,   true);
+  m_priv_nh.param<bool>   ("ppm_use_blending",           m_ppm_config.use_blending,             true);
+  m_priv_nh.param<bool>   ("autostart",                  autostart,                             true);
+  m_priv_nh.param<std::string>("traj_controller_name", m_traj_controller_name, "pos_based_pos_traj_controller");
 
   // Create a canopen controller
   try
