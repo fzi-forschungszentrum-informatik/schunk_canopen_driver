@@ -225,8 +225,8 @@ void SchunkCanopenNode::initDevices()
   }
 
   // Create joint state publisher
-  m_joint_pub = m_priv_nh.advertise<sensor_msgs::JointState>("joint_states", 1);
-  m_current_pub = m_priv_nh.advertise<std_msgs::Int16MultiArray>("joint_currents", 1);
+  m_joint_pub = m_pub_nh.advertise<sensor_msgs::JointState>("joint_states", 1);
+  m_current_pub = m_pub_nh.advertise<std_msgs::Int16MultiArray>("joint_currents", 1);
 
   // services
   m_enable_service =  m_priv_nh.advertiseService("enable_nodes", &SchunkCanopenNode::enableNodes, this);
