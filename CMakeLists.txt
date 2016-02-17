@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 FIND_PACKAGE( icl_core REQUIRED)
 FIND_PACKAGE( icl_hardware REQUIRED COMPONENTS icl_hardware_canopen)
-
+FIND_PACKAGE( icl_comm OPTIONAL_COMPONENTS icl_comm_websocket)
 
 # generate_dynamic_reconfigure_options(
 #   cfg/schunk_canopen_driver_config.cfg
@@ -23,7 +23,13 @@ FIND_PACKAGE( icl_hardware REQUIRED COMPONENTS icl_hardware_canopen)
 
 add_definitions( ${icl_hardware_DEFINITIONS} )
 add_definitions( ${icl_core_DEFINITIONS} )
+add_definitions( ${icl_comm_DEFINITIONS} )
 
+if(icl_comm_icl_comm_websocket_FOUND)
+  message(STATUS "Building schunk_canopen_driver with icl_comm_websocket support.")
+else()
+  message(STATUS "Building schunk_canopen_driver without icl_comm_websocket support.")
+endif()
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
