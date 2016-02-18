@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   hardware_interface
   controller_manager
   message_generation
+  urdf
 )
 
 FIND_PACKAGE( icl_core REQUIRED)

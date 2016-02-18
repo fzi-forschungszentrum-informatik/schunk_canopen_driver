@@ -20,9 +20,14 @@
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/robot_hw.h>
+#include <joint_limits_interface/joint_limits.h>
 #include <controller_manager/controller_manager.h>
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
+#include <joint_limits_interface/joint_limits.h>
+#include <joint_limits_interface/joint_limits_urdf.h>
+#include <joint_limits_interface/joint_limits_rosparam.h>
+#include <joint_limits_interface/joint_limits_interface.h>
 
 using namespace icl_hardware;
 using namespace canopen_schunk;
@@ -43,7 +48,7 @@ public:
   virtual void read();
 
   /// \brief write the command to the robot hardware.
-  virtual void write();
+  virtual void write(ros::Time time, ros::Duration period);
 
   bool canSwitch(
       const std::list<hardware_interface::ControllerInfo> &start_list,
@@ -68,6 +73,7 @@ protected:
   // Interfaces
   hardware_interface::JointStateInterface m_joint_state_interface;
   hardware_interface::PositionJointInterface m_position_joint_interface;
+  joint_limits_interface::PositionJointSoftLimitsInterface m_jnt_limits_interface;
 
   size_t m_num_joints;
 
@@ -81,6 +87,9 @@ protected:
 
   std::vector<bool> m_nodes_in_fault;
   bool m_is_fault;
+
+  joint_limits_interface::JointLimits m_joint_limits;
+  joint_limits_interface::SoftJointLimits m_joint_soft_limits; // only available through URDF, currently not used.
 };
 
 

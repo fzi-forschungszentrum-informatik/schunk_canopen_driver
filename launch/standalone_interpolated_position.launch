@@ -31,6 +31,20 @@
   <node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false"
     output="screen" args="load joint_state_controller" />
 
+  <!-- load test controller -->
+  <node name="ros_control_pos1_controller" pkg="controller_manager" type="controller_manager" respawn="false"
+    output="screen" args="load pos_based_joint1_controller" />
+  <node name="ros_control_pos2_controller" pkg="controller_manager" type="controller_manager" respawn="false"
+    output="screen" args="load pos_based_joint2_controller" />
+  <node name="ros_control_pos3_controller" pkg="controller_manager" type="controller_manager" respawn="false"
+    output="screen" args="load pos_based_joint3_controller" />
+  <node name="ros_control_pos4_controller" pkg="controller_manager" type="controller_manager" respawn="false"
+    output="screen" args="load pos_based_joint4_controller" />
+  <node name="ros_control_pos5_controller" pkg="controller_manager" type="controller_manager" respawn="false"
+    output="screen" args="load pos_based_joint5_controller" />
+  <node name="ros_control_pos6_controller" pkg="controller_manager" type="controller_manager" respawn="false"
+    output="screen" args="load pos_based_joint6_controller" />
+
   <!--   Convert joint states to /tf tranforms -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 

@@ -492,7 +492,7 @@ void SchunkCanopenNode::rosControlLoop()
       if (counter > 20)
       {
       // Output
-        m_hardware_interface->write();
+        m_hardware_interface->write(current_time, elapsed_time);
       }
     }
 

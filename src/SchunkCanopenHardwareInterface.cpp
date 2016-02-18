@@ -12,10 +12,19 @@
  */
 //----------------------------------------------------------------------
 
+#include <urdf_parser/urdf_parser.h>
+#include <urdf_model/model.h>
+#include <urdf/model.h>
 
 #include "schunk_canopen_driver/SchunkCanopenHardwareInterface.h"
 
 #include <icl_hardware_canopen/SchunkPowerBallNode.h>
+
+using namespace hardware_interface;
+using joint_limits_interface::JointLimits;
+using joint_limits_interface::SoftJointLimits;
+using joint_limits_interface::PositionJointSoftLimitsHandle;
+using joint_limits_interface::PositionJointSoftLimitsInterface;
 
 SchunkCanopenHardwareInterface::SchunkCanopenHardwareInterface (ros::NodeHandle& nh,
                                                                 boost::shared_ptr<CanOpenController>& canopen)
@@ -37,6 +46,26 @@ void SchunkCanopenHardwareInterface::init()
   m_joint_names.clear();
   m_nodes_in_fault.resize(num_nodes, false);
 
+  bool rosparam_limits_ok = true;
+  bool urdf_limits_ok = true;
+  bool urdf_soft_limits_ok = true;
+
+
+
+//  boost::shared_ptr<urdf::ModelInterface> urdf = urdf::parseURDF("/svh/robot_description");
+
+  urdf::Model urdf_model;
+  if(!m_node_handle.hasParam("/svh/robot_description"))
+  {
+      ROS_ERROR("robot description not found!!");
+  }
+  if(!urdf_model.initParam("/svh/robot_description"))
+  {
+    ROS_ERROR("robot description parsing error!!");
+  }
+
+
+
   // Initialize controller
   for (std::size_t i = 0; i < num_nodes; ++i) {
     std::string joint_name = "";
@@ -57,12 +86,42 @@ void SchunkCanopenHardwareInterface::init()
               &m_joint_positions[i], &m_joint_velocity[i], &m_joint_effort[i]));
 
       // Create position joint interface
-      m_position_joint_interface.registerHandle(
-          hardware_interface::JointHandle(
-              m_joint_state_interface.getHandle(m_joint_names[i]),
-              &m_joint_position_commands[i]));
+      hardware_interface::JointHandle hwi_handle(
+          m_joint_state_interface.getHandle(m_joint_names[i]),
+          &m_joint_position_commands[i]);
+      m_position_joint_interface.registerHandle(hwi_handle);
+
+      // Create a joint_limit_interface:
+
+      // Populate (soft) joint limits from the ros parameter server
+      rosparam_limits_ok = getJointLimits(joint_name, m_node_handle, m_joint_limits);
+      if(!rosparam_limits_ok) {
+        ROS_ERROR_STREAM ("Could not set the joint limits for joint " << joint_name << "!");
+      }
+
+      // Populate (soft) joint limits from URDF
+      // Limits specified in URDF overwrite existing values in 'limits' and 'soft_limits'
+      // Limits not specified in URDF preserve their existing values
+/*      boost::shared_ptr<const urdf::Joint> urdf_joint = urdf_model.getJoint(joint_name);
+      urdf_limits_ok = getJointLimits(urdf_joint, m_joint_limits);
+      if(!urdf_limits_ok) {
+        ROS_ERROR_STREAM ("Could not set the joint limits for joint " << joint_name << "!");
+      }
+      urdf_soft_limits_ok = getSoftJointLimits(urdf_joint, m_joint_soft_limits);
+      if(!urdf_soft_limits_ok) {
+        ROS_ERROR_STREAM ("Could not set the joint soft limits for joint " << joint_name << "!");
+      }*/
+
+      // Register handle in joint limits interface
+      PositionJointSoftLimitsHandle limits_handle(hwi_handle, // We read the state and read/write the command
+                                                  m_joint_limits,       // Limits spec
+                                                  m_joint_soft_limits);  // Soft limits spec
+
+      m_jnt_limits_interface.registerHandle(limits_handle);
     }
   }
+
+
   registerInterface(&m_joint_state_interface); // From RobotHW base class.
   registerInterface(&m_position_joint_interface); // From RobotHW base class.
 }
@@ -93,10 +152,12 @@ void SchunkCanopenHardwareInterface::read()
   }
 }
 
-void SchunkCanopenHardwareInterface::write()
+void SchunkCanopenHardwareInterface::write(ros::Time time, ros::Duration period)
 {
   if (m_node_ids.size() == m_joint_position_commands.size())
   {
+    m_jnt_limits_interface.enforceLimits(period);
+
     std::stringstream commanded_positions;
     SchunkPowerBallNode::Ptr node;
     for (size_t i = 0; i < m_node_ids.size(); ++i)

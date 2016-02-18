@@ -29,3 +29,34 @@ pos_based_pos_traj_controller:
      - arm_4_joint
      - arm_5_joint
      - arm_6_joint
+
+
+pos_based_joint1_controller:
+   type: position_controllers/JointPositionController
+   publish_rate: 50
+   joint: arm_1_joint
+
+pos_based_joint2_controller:
+   type: position_controllers/JointPositionController
+   publish_rate: 50
+   joint: arm_2_joint
+
+pos_based_joint3_controller:
+   type: position_controllers/JointPositionController
+   publish_rate: 50
+   joint: arm_3_joint
+
+pos_based_joint4_controller:
+   type: position_controllers/JointPositionController
+   publish_rate: 50
+   joint: arm_4_joint
+
+pos_based_joint5_controller:
+   type: position_controllers/JointPositionController
+   publish_rate: 50
+   joint: arm_5_joint
+
+pos_based_joint6_controller:
+   type: position_controllers/JointPositionController
+   publish_rate: 50
+   joint: arm_6_joint
