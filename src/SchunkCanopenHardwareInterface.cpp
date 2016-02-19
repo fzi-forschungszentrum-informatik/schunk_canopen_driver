@@ -156,6 +156,7 @@ void SchunkCanopenHardwareInterface::write(ros::Time time, ros::Duration period)
 {
   if (m_node_ids.size() == m_joint_position_commands.size())
   {
+    // For this position based interface, only the joint limits in degree and velocity are enforced. Acceleration is ignored.
     m_jnt_limits_interface.enforceLimits(period);
 
     std::stringstream commanded_positions;

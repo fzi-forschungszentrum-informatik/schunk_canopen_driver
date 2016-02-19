@@ -453,8 +453,6 @@ void SchunkCanopenNode::rosControlLoop()
   }
   m_is_enabled = true;
 
-  SchunkPowerBallNode::Ptr node = m_controller->getNode<SchunkPowerBallNode>(8);
-
   size_t counter = 0;
 
   while (ros::ok() && !m_homing_active) {
