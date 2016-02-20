@@ -47,19 +47,19 @@ void SchunkCanopenHardwareInterface::init()
   m_nodes_in_fault.resize(num_nodes, false);
 
   bool rosparam_limits_ok = true;
-  bool urdf_limits_ok = true;
-  bool urdf_soft_limits_ok = true;
+//  bool urdf_limits_ok = true;
+//  bool urdf_soft_limits_ok = true;
 
 
 
-//  boost::shared_ptr<urdf::ModelInterface> urdf = urdf::parseURDF("/svh/robot_description");
+//  boost::shared_ptr<urdf::ModelInterface> urdf = urdf::parseURDF("robot_description");
 
   urdf::Model urdf_model;
-  if(!m_node_handle.hasParam("/svh/robot_description"))
+  if(!m_node_handle.hasParam("robot_description"))
   {
       ROS_ERROR("robot description not found!!");
   }
-  if(!urdf_model.initParam("/svh/robot_description"))
+  if(!urdf_model.initParam("robot_description"))
   {
     ROS_ERROR("robot description parsing error!!");
   }
