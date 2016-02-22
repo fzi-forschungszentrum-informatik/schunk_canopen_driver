@@ -1,31 +1,31 @@
 joint_limits:
   arm_1_joint:
     has_velocity_limits: true
-    max_velocity: 0.250
+    max_velocity: 1.25
     has_acceleration_limits: true
-    max_acceleration: 0.250
+    max_acceleration: 6.0
   arm_2_joint:
     has_velocity_limits: true
-    max_velocity: 0.250
+    max_velocity: 1.25
     has_acceleration_limits: true
-    max_acceleration: 0.250
+    max_acceleration: 6.0
   arm_3_joint:
     has_velocity_limits: true
-    max_velocity: 0.250
+    max_velocity: 1.25
     has_acceleration_limits: true
-    max_acceleration: 0.250
+    max_acceleration: 6.0
   arm_4_joint:
     has_velocity_limits: true
-    max_velocity: 0.250
+    max_velocity: 1.25
     has_acceleration_limits: true
-    max_acceleration: 0.250
+    max_acceleration: 6.0
   arm_5_joint:
     has_velocity_limits: true
-    max_velocity: 0.250
+    max_velocity: 1.25
     has_acceleration_limits: true
-    max_acceleration: 0.250
+    max_acceleration: 6.0
   arm_6_joint:
     has_velocity_limits: true
-    max_velocity: 0.250
+    max_velocity: 1.25
     has_acceleration_limits: true
-    max_acceleration: 0.250
+    max_acceleration: 6.0
