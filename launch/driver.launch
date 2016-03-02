@@ -9,7 +9,7 @@
   <arg name="pcan_device" default="/dev/pcanusb1" />
   <arg name="with_ros_control" default="true" />
   <arg name="do_autostart" default="true" />
-  <arg name="trajectory_controller_name" />
+  <arg name="trajectory_controller_name" default="pos_based_pos_traj_controller" />
 
   <rosparam command="load" file="$(find schunk_canopen_driver)/config/joint_limits.yaml"/>
 
