@@ -3,7 +3,7 @@
   This is intended to launch the robot driver together with a ros_controller and a URDF model
  -->
 <launch>
-  <arg name="pcan_device" default="/dev/pcanusb0" />
+  <arg name="pcan_device" default="/dev/pcanusb1" />
   <arg name="trajectory_controller_name" default="pos_based_pos_traj_controller_arm" />
 
   <include file="$(find schunk_canopen_driver)/launch/driver.launch">
