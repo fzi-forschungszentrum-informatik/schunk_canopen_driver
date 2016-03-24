@@ -129,6 +129,8 @@ SchunkCanopenNode::SchunkCanopenNode()
 
   DS402Node::Ptr node;
   std_msgs::Int16MultiArray currents;
+
+  // The robot's status (joint values and currents) will be published periodically in here
   while (ros::ok())
   {
     ros::spinOnce();
@@ -180,10 +182,9 @@ void SchunkCanopenNode::initDevices()
     ROS_INFO ("Going to shut down now");
     exit (-1);
   }
-
   catch (const PDOException& e)
   {
-    ROS_ERROR_STREAM ("Caught ProtocolException while initializing devices: " << e.what());
+    ROS_ERROR_STREAM ("Caught PDOException while initializing devices: " << e.what());
     ROS_INFO ("Going to shut down now");
     exit (-1);
   }
