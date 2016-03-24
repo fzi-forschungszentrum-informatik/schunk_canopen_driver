@@ -321,6 +321,10 @@ void SchunkCanopenNode::trajThread(actionlib::ServerGoalHandle< control_msgs::Fo
       pos = node->getTargetFeedback();
       feedback.feedback.actual.positions.push_back(pos);
     }
+
+    m_controller->syncAll();
+    m_controller->enablePPMotion();
+
     ros::Duration max_time = gh.getGoal()->goal_time_tolerance;
 
     ros::Duration spent_time = start - start;
