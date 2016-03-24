@@ -22,7 +22,8 @@
   <!-- Author tags are optional, mutiple are allowed, one per tag -->
   <!-- Authors do not have to be maintianers, but could be -->
   <!-- Example: -->
-  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
+  <author email="mauch@fzi.de">Felix Mauch</author>
+  <author email="heppner@fzi.de">Georg Heppner</author>
 
 
   <!-- The *_depend tags are used to specify dependencies -->
