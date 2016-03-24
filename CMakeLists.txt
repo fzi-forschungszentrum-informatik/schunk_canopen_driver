@@ -142,6 +142,25 @@ add_dependencies(schunk_canopen_driver_node ${PROJECT_NAME}_generate_messages_cp
    ${icl_core_LIBRARIES}
    ${catkin_LIBRARIES}
  )
+
+
+## Declare a cpp executable
+add_executable(schunk_canopen_driver_move_home_node
+  src/MoveToHomeNode.cpp
+)
+
+## Add cmake target dependencies of the executable/library
+## as an example, message headers may need to be generated before nodes
+# add_dependencies(schunk_canopen_driver ros_canopen_schunk_chain_generate_messages_cpp)
+
+add_dependencies(schunk_canopen_driver_move_home_node ${PROJECT_NAME}_generate_messages_cpp)
+
+## Specify libraries to link a library or executable target against
+ target_link_libraries(schunk_canopen_driver_move_home_node
+   ${icl_hardware_LIBRARIES}
+   ${icl_core_LIBRARIES}
+   ${catkin_LIBRARIES}
+ )
 #############
 ## Install ##
 #############

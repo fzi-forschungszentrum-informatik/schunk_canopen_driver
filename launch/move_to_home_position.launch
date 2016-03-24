@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- GDB functionality -->
+  <arg name="debug" default="false" />
+  <arg unless="$(arg debug)" name="launch_prefix" value="" />
+  <arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args" />
+
+  <arg name="frequency" default="30" />
+  <arg name="pcan_device" default="/dev/pcanusb1" />
+
+  <node name="schunk_canopen_node" pkg="schunk_canopen_driver" type="schunk_canopen_driver_move_home_node" output="screen" launch-prefix="$(arg launch_prefix)">
+    <!--   Set env variable for the error codes   -->
+    <env name="CANOPEN_RESOURCE_PATH" value="$(find schunk_canopen_driver)/etc/error_codes" />
+    <param name="frequency"           type="int"      value="$(arg frequency)" />
+    <param name="can_device_name"          type="string"   value="$(arg pcan_device)"   />
+    <rosparam command="load" file="$(find schunk_canopen_driver)/config/example_config.yaml"/>
+    <rosparam command="load" file="$(find schunk_canopen_driver)/config/node_mapping.yaml"/>
+
+  </node>
+</launch>
