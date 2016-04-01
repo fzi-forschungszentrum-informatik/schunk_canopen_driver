@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package>
   <name>schunk_canopen_driver</name>
-  <version>0.0.1</version>
+  <version>1.0.0</version>
   <description>The schunk_canopen_driver package</description>
 
-  <maintainer email="mauch@fzi.de">Felix Mauch</maintainer>
+  <maintainer email="heppner@fzi.de">Felix Mauch</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
