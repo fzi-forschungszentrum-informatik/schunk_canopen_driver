@@ -1,5 +1,10 @@
 <?xml version="1.0"?>
+<!-- File description
+  Purpose of this launch file is to give an easy "reset" functionality. The launch file will
+  start a node that resets the arm to ZERO position (completely streched out) and then terminates
+  -->
 <launch>
+
   <!-- GDB functionality -->
   <arg name="debug" default="false" />
   <arg unless="$(arg debug)" name="launch_prefix" value="" />

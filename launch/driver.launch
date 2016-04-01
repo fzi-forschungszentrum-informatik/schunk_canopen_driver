@@ -1,18 +1,30 @@
 <?xml version="1.0"?>
+<!-- File description
+  Brings up the main driver node. This file is meant to be used as include (see the standalone files for that)
+  In case ROS-Control is used the corresponding actions have to be taken in a seperate file (see standalone_interpolated_position.launch)
+  -->
 <launch>
   <!-- GDB functionality -->
   <arg name="debug" default="false" />
   <arg unless="$(arg debug)" name="launch_prefix" value="" />
   <arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args" />
 
+  <!-- frequency to run the main driver node with -->
   <arg name="frequency" default="30" />
+  <!-- Peak Can Device to use. It needs to be a CHAR Dev (compile with NET=NO) -->
   <arg name="pcan_device" default="/dev/pcanusb1" />
+  <!-- Indicate if the driver shall use ros control to interpolate or not. If not, the Arm will be used in Profile position mode -->
   <arg name="with_ros_control" default="true" />
+  <!-- Automatically start the arm so it can be used right away -->
   <arg name="do_autostart" default="true" />
+  <!-- Give a name for the trajectory controller to use (in default case) -->
   <arg name="trajectory_controller_name" default="pos_based_pos_traj_controller" />
 
+
+  <!-- Joint limits for the speed and acceleration of individual joints -->
   <rosparam command="load" file="$(find schunk_canopen_driver)/config/joint_limits.yaml"/>
 
+  <!-- The actual driver node -->
   <node name="schunk_canopen_node" pkg="schunk_canopen_driver" type="schunk_canopen_driver_node" output="screen" launch-prefix="$(arg launch_prefix)">
     <!--   Set env variable for the error codes   -->
     <env name="CANOPEN_RESOURCE_PATH" value="$(find schunk_canopen_driver)/etc/error_codes" />
@@ -21,6 +33,7 @@
     <param name="autostart"          type="bool"   value="$(arg do_autostart)"   />
     <param name="use_ros_control" type="bool" value="$(arg with_ros_control)"/>
     <param name="traj_controller_name" type="string" value="$(arg trajectory_controller_name)"/>
+    <!-- Config files to indicate what CanOpen Nodes to start -->
     <rosparam command="load" file="$(find schunk_canopen_driver)/config/example_config.yaml"/>
     <rosparam command="load" file="$(find schunk_canopen_driver)/config/node_mapping.yaml"/>
 

@@ -17,6 +17,7 @@
   <!-- robot model -->
   <param name="robot_description" command="$(find xacro)/xacro.py '$(find schunk_description)/urdf/lwa4p/arm.urdf.xacro'" />
 
+  <!-- ROS-Control system bringup -->
   <include file="$(find schunk_canopen_driver)/launch/ros_control.launch">
       <arg name="trajectory_controller_name" value="$(arg trajectory_controller_name)" />
   </include>
