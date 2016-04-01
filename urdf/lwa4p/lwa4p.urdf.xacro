@@ -1,0 +1,276 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Safety offset in rad towards the hard stop of the arm -->
+  <property name="safety_offset" value="0.02"/>
+
+  <!-- Some additional information used by other tools -->
+  <xacro:include filename="$(find schunk_canopen_driver)/urdf/lwa4p/lwa4p.gazebo.xacro" />
+  <xacro:include filename="$(find schunk_canopen_driver)/urdf/lwa4p/lwa4p.transmission.xacro" />
+
+  <xacro:include filename="$(find schunk_canopen_driver)/urdf/materials.urdf.xacro" />
+
+  <!-- Schunk Powerball (LWA4P) Macro -->
+  <xacro:macro name="schunk_lwa4p" params="parent name *origin">
+
+
+    <!-- joint between base_link and arm_0_link -->
+    <joint name="${name}_0_joint" type="fixed" >
+      <insert_block name="origin" />
+      <parent link="${parent}" />
+      <child link="${name}_0_link" />
+    </joint>
+
+    <link name="${name}_0_link">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <mass value="0.29364"/>
+        <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01" />
+      </inertial>
+
+       <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://schunk_canopen_driver/meshes/lwa4p/arm_0_link.dae" />
+        </geometry>
+        <material name="Schunk/DarkGrey" />
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://schunk_canopen_driver/meshes/lwa4p/arm_0_link.stl" />
+        </geometry>
+      </collision>
+     </link>
+
+     <joint name="${name}_1_joint" type="revolute">
+        <origin xyz="0 0 0.11" rpy="0 0 0"/>
+        <parent link="${name}_0_link"/>
+        <child link="${name}_1_link"/>
+        <axis xyz="0 0 1"/>
+        <calibration rising="${arm_1_ref}"/>
+        <limit effort="0.1" velocity="1.25" lower="${-2.97 + safety_offset}" upper="${2.97 - safety_offset}" />
+     </joint>
+
+
+    <link name="${name}_1_link">
+      <xacro:default_inertial/>
+<!--
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <mass value="0.29364"/>
+        <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01" />
+      </inertial>
+-->
+
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://schunk_canopen_driver/meshes/lwa4p/arm_1_link.dae" />
+        </geometry>
+        <material name="Schunk/DarkGrey" />
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://schunk_canopen_driver/meshes/lwa4p/arm_1_link.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- joint between arm_1_link and arm_2_link -->
+    <joint name="${name}_2_joint" type="revolute">
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <parent link="${name}_1_link"/>
+      <child link="${name}_2_link"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="0.1" velocity="1.25" lower="${-2.97 + safety_offset}" upper="${2.97 - safety_offset}" />
+      <!-- This is useful when the arm is mounted standing on a table -->
+      <!-- <safety_controller k_position="20" k_velocity="25" soft_lower_limit="${-1.9 + safety_offset}" soft_upper_limit="${1.9 - safety_offset}" /> -->
+    </joint>
+
+    <link name="${name}_2_link">
+      <xacro:default_inertial/>
+<!--
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="1.68311"/>
+        <inertia ixx="0.03" ixy="0" ixz="0" iyy="0.03" iyz="0" izz="0.03" />
+      </inertial>
+-->
+
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://schunk_canopen_driver/meshes/lwa4p/arm_2_link.dae" />
+        </geometry>
+        <material name="Schunk/Blue" />
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://schunk_canopen_driver/meshes/lwa4p/arm_2_link.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- joint between arm_2_link and arm_3_link -->
+    <joint name="${name}_3_joint" type="revolute">
+      <origin xyz="0 0.350 0" rpy="0 3.14159 0"/>
+      <parent link="${name}_2_link"/>
+      <child link="${name}_3_link"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="0.1" velocity="1.25" lower="${-2.97 + safety_offset}" upper="${2.97 - safety_offset}" />
+      <safety_controller k_position="20" k_velocity="25" soft_lower_limit="${-2.7+ safety_offset}" soft_upper_limit="${2.7 - safety_offset}" />
+    </joint>
+
+    <link name="${name}_3_link">
+      <xacro:default_inertial/>
+<!--
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="2.1"/>
+        <inertia ixx="0.03" ixy="0" ixz="0" iyy="0.03" iyz="0" izz="0.03" />
+      </inertial>
+-->
+
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://schunk_canopen_driver/meshes/lwa4p/arm_3_link.dae" />
+        </geometry>
+        <material name="Schunk/DarkGrey" />
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://schunk_canopen_driver/meshes/lwa4p/arm_3_link.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- joint between arm_3_link and arm_4_link -->
+    <joint name="${name}_4_joint" type="revolute">
+      <origin xyz="0 0 0" rpy="-1.5708 3.14159 0" />
+      <parent link="${name}_3_link"/>
+      <child link="${name}_4_link"/>
+      <axis xyz="0 0 1" />
+      <limit effort="0.1" velocity="1.25" lower="${-2.97 + safety_offset}" upper="${2.97 - safety_offset}"/>
+    </joint>
+
+    <link name="${name}_4_link">
+      <xacro:default_inertial/>
+<!--
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="1.68311"/>
+        <inertia ixx="0.03" ixy="0" ixz="0" iyy="0.03" iyz="0" izz="0.03" />
+      </inertial>
+-->
+
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://schunk_canopen_driver/meshes/lwa4p/arm_4_link.dae" />
+        </geometry>
+        <material name="Schunk/Blue" />
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://schunk_canopen_driver/meshes/lwa4p/arm_4_link.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- joint between arm_4_link and arm_5_link -->
+    <joint name="${name}_5_joint" type="revolute">
+      <origin xyz="0 0.005263 0.305" rpy="1.5708 0 3.14159" />
+      <parent link="${name}_4_link"/>
+      <child link="${name}_5_link"/>
+      <axis xyz="0 0 1" />
+      <limit effort="0.1" velocity="1.25" lower="${-2.97 + safety_offset}" upper="${2.97 - safety_offset}" />
+    </joint>
+
+    <link name="${name}_5_link">
+      <xacro:default_inertial/>
+<!--
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.807"/>
+        <inertia ixx="0.03" ixy="0" ixz="0" iyy="0.03" iyz="0" izz="0.03" />
+      </inertial>
+-->
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://schunk_canopen_driver/meshes/lwa4p/arm_5_link.dae" />
+        </geometry>
+        <material name="Schunk/DarkGrey" />
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://schunk_canopen_driver/meshes/lwa4p/arm_5_link.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- joint between arm_5_link and arm_6_link -->
+    <joint name="${name}_6_joint" type="revolute">
+      <origin xyz="0 0 0" rpy="-1.5708 0 0" />
+      <parent link="${name}_5_link"/>
+      <child link="${name}_6_link"/>
+      <axis xyz="0 0 1" />
+      <limit effort="20.1" velocity="1.25" lower="${-2.967 + safety_offset}" upper="${2.967 - safety_offset}" />
+      <!--safety_controller k_position="20" k_velocity="25" soft_lower_limit="${-2.09 + 0.01}" soft_upper_limit="${2.09 - 0.01}" /-->
+    </joint>
+
+    <link name="${name}_6_link">
+      <xacro:default_inertial/>
+<!--
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.819"/>
+        <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01" />
+      </inertial>
+-->
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://schunk_canopen_driver/meshes/lwa4p/arm_6_link.dae" />
+        </geometry>
+        <material name="Schunk/DarkGrey" />
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://schunk_canopen_driver/meshes/lwa4p/arm_6_link.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+
+    <!-- joint between arm_6_link and tcp_link -->
+    <joint name="${name}_tcp_joint" type="fixed">
+      <origin xyz="0 0 0.08" rpy="0 0 0" />
+      <parent link="${name}_6_link"/>
+      <child link="${name}_tcp_link"/>
+    </joint>
+    <link name="${name}_tcp_link">
+    </link>
+
+    <!-- extensions -->
+    <xacro:schunk_lwa4p_gazebo name="${name}" />
+    <xacro:schunk_lwa4p_transmission name="${name}" />
+
+  </xacro:macro>
+
+</robot>
+

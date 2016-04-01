@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<robot name="arm" xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+       xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+       xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+       xmlns:xacro="http://ros.org/wiki/xacro">
+  
+  <link name="base_link">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </link>
+
+  <!-- load the actuall LWA4p -->
+  <xacro:include filename="$(find schunk_canopen_driver)/urdf/lwa4p/lwa4p.urdf.xacro" />
+
+  <!-- instantiate with a base link to attach it to -->
+  <xacro:schunk_lwa4p parent="base_link" name="arm">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+
+      <xacro:property name="arm_1_ref" value="2.1" />
+      <xacro:property name="arm_2_ref" value="2.1" />
+      <xacro:property name="arm_3_ref" value="2.1" />
+      <xacro:property name="arm_4_ref" value="2.1" />
+      <xacro:property name="arm_5_ref" value="2.1" />
+      <xacro:property name="arm_6_ref" value="2.1" />
+  </xacro:schunk_lwa4p>
+</robot>

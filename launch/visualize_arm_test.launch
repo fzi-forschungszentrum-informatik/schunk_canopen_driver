@@ -1,0 +1,15 @@
+<launch>
+      <!-- Load universal robotic description format (URDF) -->
+      <param name="robot_description" command="$(find xacro)/xacro.py '$(find schunk_canopen_driver)/urdf/lwa4p/arm.urdf.xacro'" />
+
+      <!--  Node ->  joint_state_publisher -->
+      <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
+        <rosparam param="source_list" >['ik_result']</rosparam>
+        <param name="use_gui" value="true"/>
+      </node>
+      <!--  Node -> robot_state_publisher -->
+      <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+        <param name="respawn" value="true" />
+        <param name="output" value="screen" />
+      </node>
+</launch>

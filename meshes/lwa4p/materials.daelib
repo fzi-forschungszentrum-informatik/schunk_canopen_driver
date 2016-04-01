@@ -1,0 +1,57 @@
+
+<library_effects>
+  <effect id="grey_metal-effect">
+    <profile_COMMON>
+      <technique sid="common">
+	<phong>
+          <emission>
+            <color sid="emission">0 0 0 1</color>
+          </emission>
+          <ambient>
+            <color sid="ambient">0.0001 0.0001 0.0001 0</color>
+          </ambient>
+          <diffuse>
+            <color sid="diffuse">0.45 0.45 0.45 1</color>
+          </diffuse>
+          <specular>
+            <color sid="specular">0.3 0.3 0.3 1</color>
+          </specular>
+          <shininess>
+            <float sid="shininess">50</float>
+          </shininess>
+          <index_of_refraction>
+            <float sid="index_of_refraction">1.65</float>
+          </index_of_refraction>
+        </phong>
+      </technique>
+    </profile_COMMON>
+  </effect>
+
+  <effect id="schunk_blue-effect">
+    <profile_COMMON>
+      <technique sid="common">
+        <phong>
+          <emission>
+            <color sid="emission">0 0 0 1</color>
+          </emission>
+          <ambient>
+            <color sid="ambient">0.0001 0.0001 0.0001 1</color>
+          </ambient>
+          <diffuse>
+            <color sid="diffuse">0 0 0.35 1</color>
+          </diffuse>
+          <specular>
+            <color sid="specular">0.015 0.015 0.015 1</color>
+          </specular>
+          <shininess>
+            <float sid="shininess">50</float>
+          </shininess>
+          <index_of_refraction>
+            <float sid="index_of_refraction">1</float>
+          </index_of_refraction>
+        </phong>
+      </technique>
+    </profile_COMMON>
+  </effect>
+</library_effects>
+
