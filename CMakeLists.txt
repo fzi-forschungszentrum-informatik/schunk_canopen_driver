@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
+
+SET(ICMAKER_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/icmaker")
+INCLUDE(${ICMAKER_DIRECTORY}/CMakeLists.txt)
+
 project(schunk_canopen_driver)
+
+ADD_SUBDIRECTORY (src/icl_hardware_canopen)
+
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
