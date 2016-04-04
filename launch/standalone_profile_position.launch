@@ -8,7 +8,7 @@
   position mode which uses ros_control.
  -->
 <launch>
-  <arg name="pcan_device" default="/dev/pcanusb1" />
+  <arg name="pcan_device" default="auto" />
 
   <include file="$(find schunk_canopen_driver)/launch/driver.launch">
     <arg name="pcan_device" value="$(arg pcan_device)" />

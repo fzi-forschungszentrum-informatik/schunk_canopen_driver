@@ -11,7 +11,7 @@
   <arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args" />
 
   <arg name="frequency" default="30" />
-  <arg name="pcan_device" default="/dev/pcanusb1" />
+  <arg name="pcan_device" default="auto" />
 
   <node name="schunk_canopen_node" pkg="schunk_canopen_driver" type="schunk_canopen_driver_move_home_node" output="screen" launch-prefix="$(arg launch_prefix)">
     <!--   Set env variable for the error codes   -->
