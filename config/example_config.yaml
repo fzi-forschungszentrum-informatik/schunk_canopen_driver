@@ -1,7 +1,22 @@
-# Quite arbitrary group name
+# Quite arbitrary group name. Multiple chains can be defined here.
 chain_names: ["arm"]
+#chain_names: ["arm", "gripper"]
+
 # canopen ids that will be used. Remember to list a mapping in node_mapping.yaml
+# The parameter's name has to be 'chain_<chain_name>''
 chain_arm: [3, 4, 5, 6, 7, 8]
+#chain_gripper: [12]
+
+# Possible chain types are "PowerBall" and "DS402". This parameter can be left out, then PowerBall is assumed.
+# The parameter's name has to be 'chain_<chain_name>_type'
+#chain_arm_type: PowerBall
+#chain_gripper_type: DS402
+
+# If the transmission is not handled inside tha hardware, which is the case for Schunk devices, use this to set a transmission factor
+# The parameter's name has to be 'chain_<chain_name>_transmission factor'
+# chain_arm_transmission_factor: 57295.7795131
+#chain_gripper_transmission_factor: 1.0
+
 # state publisher frequency
 frequency: 30
 

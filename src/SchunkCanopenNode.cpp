@@ -99,11 +99,49 @@ SchunkCanopenNode::SchunkCanopenNode()
       ROS_ERROR_STREAM("Did not find device list for chain " << chain_names[i] << ". Make sure, that an entry " << name << " exists.");
       continue;
     }
-    ROS_INFO_STREAM ("Found chain with name " << name << " and " << chain.size() << " nodes");
+
+    // Get the chain type
+    name = "chain_" + chain_names[i] + "_type";
+    std::string chain_type = "PowerBall";
+    try
+    {
+      m_priv_nh.getParam(name, chain_type);
+    }
+    catch (ros::InvalidNameException e)
+    {
+      ROS_ERROR_STREAM("Parameter Error!");
+    }
+
+    // Get the chain transmission factor
+    name = "chain_" + chain_names[i] + "_transmission_factor";
+    double transmission_factor = 1.0;
+    try
+    {
+      m_priv_nh.getParam(name, transmission_factor);
+      if (chain_type != "PowerBall")
+      {
+        ROS_INFO_STREAM ("Chain transmission factor is " << transmission_factor);
+      }
+    }
+    catch (ros::InvalidNameException e)
+    {
+      ROS_ERROR_STREAM("Parameter Error!");
+    }
+
+
+    ROS_INFO_STREAM ("Found chain with name " << chain_names[i] << " of type " << chain_type << " containing " << chain.size() << " nodes.");
     chain_configuratuions[name] = chain;
     for (size_t j = 0; j < chain.size(); ++j)
     {
-      m_controller->addNode<SchunkPowerBallNode>(chain[j], chain_names[i]);
+      if (chain_type == "DS402")
+      {
+        m_controller->addNode<DS402Node>(chain[j], chain_names[i]);
+        m_controller->getNode<DS402Node>(chain[j])->setTransmissionFactor(transmission_factor);
+      }
+      else
+      {
+        m_controller->addNode<SchunkPowerBallNode>(chain[j], chain_names[i]);
+      }
 
       std::string joint_name = "";
       std::string mapping_key = "~node_mapping_" + boost::lexical_cast<std::string>( chain[j]);
@@ -139,6 +177,8 @@ SchunkCanopenNode::SchunkCanopenNode()
     {
       joint_msg.position.clear();
       currents.data.clear();
+      // TODO: Go over all groups. to handle different things. For example, we might not want to
+      // read the current from a gripper...
       for (std::map<std::string, uint8_t>::iterator it = m_joint_name_mapping.begin();
            it != m_joint_name_mapping.end();
            ++it)
@@ -148,7 +188,15 @@ SchunkCanopenNode::SchunkCanopenNode()
         joint_msg.position.push_back(node->getTargetFeedback());
 
         // Schunk nodes write currents into the torque_actual register
-        currents.data.push_back(node->getTPDOValue<int16_t>("measured_torque"));
+        try
+        {
+          currents.data.push_back(node->getTPDOValue<int16_t>("measured_torque"));
+        }
+        catch (PDOException& e)
+        {
+          ROS_ERROR_STREAM(e.what());
+          currents.data.push_back(0);
+        }
       }
       joint_msg.header.stamp = ros::Time::now();
       m_joint_pub.publish(joint_msg);

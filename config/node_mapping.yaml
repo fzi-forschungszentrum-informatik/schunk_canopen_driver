@@ -6,3 +6,4 @@ node_mapping_5: arm_3_joint
 node_mapping_6: arm_4_joint
 node_mapping_7: arm_5_joint
 node_mapping_8: arm_6_joint
+#node_mapping_12: gripper
