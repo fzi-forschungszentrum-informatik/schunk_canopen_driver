@@ -38,7 +38,6 @@ SchunkCanopenNode::SchunkCanopenNode()
     m_nodes_initialized(false)
 {
   std::string can_device_name;
-  uint8_t first_node;
   int frequency = 30;
   std::vector<std::string> chain_names;
   std::map<std::string, std::vector<int> > chain_configuratuions;
