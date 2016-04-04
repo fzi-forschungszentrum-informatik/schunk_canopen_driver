@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   controller_manager
   message_generation
   urdf
+  std_msgs
+  control_msgs
 )
 
 FIND_PACKAGE( icl_core REQUIRED)
@@ -87,6 +89,7 @@ add_service_files(
 generate_messages(
    DEPENDENCIES
    std_msgs
+   control_msgs
 )
 
 ###################################
@@ -100,9 +103,9 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-#  LIBRARIES
+  LIBRARIES
   CATKIN_DEPENDS roscpp actionlib hardware_interface controller_manager message_runtime
-#  DEPENDS system_lib
+  DEPENDS icl_hardware_canopen
 )
 
 ###########
@@ -113,16 +116,13 @@ catkin_package(
 ## Your package locations should be listed before other locations
 #include_directories(include)
 include_directories(
-  ${catkin_INCLUDE_DIRS}
   include
+  ${catkin_INCLUDE_DIRS}
   ${icl_hardware_INCLUDE_DIRS}
   ${icl_core_INCLUDE_DIRS}
+  ${icl_comm_INCLUDE_DIRS}
 )
 
-## Declare a cpp library
-# add_library(schunk_canopen_driver
-#   src/${PROJECT_NAME}/ros_canopen_schunk_chain.cpp
-# )
 
 ## Declare a cpp executable
 add_executable(schunk_canopen_driver_node
@@ -132,14 +132,13 @@ add_executable(schunk_canopen_driver_node
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(schunk_canopen_driver ros_canopen_schunk_chain_generate_messages_cpp)
-
 add_dependencies(schunk_canopen_driver_node ${PROJECT_NAME}_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(schunk_canopen_driver_node
    ${icl_hardware_LIBRARIES}
    ${icl_core_LIBRARIES}
+   ${icl_comm_INCLUDE_DIRS}
    ${catkin_LIBRARIES}
  )
 
@@ -151,16 +150,16 @@ add_executable(schunk_canopen_driver_move_home_node
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(schunk_canopen_driver ros_canopen_schunk_chain_generate_messages_cpp)
-
 add_dependencies(schunk_canopen_driver_move_home_node ${PROJECT_NAME}_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(schunk_canopen_driver_move_home_node
    ${icl_hardware_LIBRARIES}
    ${icl_core_LIBRARIES}
+   ${icl_comm_INCLUDE_DIRS}
    ${catkin_LIBRARIES}
  )
+
 #############
 ## Install ##
 #############
@@ -176,18 +175,36 @@ add_dependencies(schunk_canopen_driver_move_home_node ${PROJECT_NAME}_generate_m
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS schunk_canopen_driver schunk_canopen_driver_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+ install(TARGETS schunk_canopen_driver_node schunk_canopen_driver_move_home_node
+   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+ install(DIRECTORY include/${PROJECT_NAME}/
+   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 #   FILES_MATCHING PATTERN "*.h"
 #   PATTERN ".svn" EXCLUDE
-# )
+ )
+
+
+#config files
+install(DIRECTORY etc/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/etc)
+
+#config files
+install(DIRECTORY config/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config)
+
+#Meshes
+install(DIRECTORY meshes/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/meshes)
+
+#URDF
+install(DIRECTORY urdf/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/urdf)
+
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
