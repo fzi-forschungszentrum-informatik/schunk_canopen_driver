@@ -1,3 +1,13 @@
+# -- BEGIN LICENSE BLOCK ----------------------------------------------
+# This file is part of the icmaker build system.
+#
+# This program is free software licensed under the BSD License. You can
+# find a copy of this license in the LICENSE folder in the top directory
+# of the source code.
+#
+# © Copyright 2016 FZI Forschungszentrum Informatik, Karlsruhe, Germany
+# -- END LICENSE BLOCK ------------------------------------------------
+
 # This macro compares version numbers of the form "x.y.z"
 # MACRO_ENSURE_VERSION( FOO_MIN_VERSION FOO_VERSION_FOUND FOO_VERSION_OK)
 # will set FOO_VERSIN_OK to true if FOO_VERSION_FOUND >= FOO_MIN_VERSION

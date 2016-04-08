@@ -1,3 +1,13 @@
+# -- BEGIN LICENSE BLOCK ----------------------------------------------
+# This file is part of the icmaker build system.
+#
+# This program is free software licensed under the BSD License. You can
+# find a copy of this license in the LICENSE folder in the top directory
+# of the source code.
+#
+# © Copyright 2016 FZI Forschungszentrum Informatik, Karlsruhe, Germany
+# -- END LICENSE BLOCK ------------------------------------------------
+
 # Works the same as find_package, but forwards the "REQUIRED" and "QUIET" arguments
 # used for the current package. For this to work, the first parameter must be the
 # prefix of the current package, then the prefix of the new package etc, which are
