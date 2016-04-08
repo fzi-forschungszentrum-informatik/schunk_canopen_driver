@@ -60,6 +60,7 @@
     <!-- <metapackage/> -->
 
     <!-- Other tools can request additional information be placed here -->
+    <rosdoc config="etc/rosdoc.yaml" />
 
   </export>
 </package>
