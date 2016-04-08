@@ -41,8 +41,6 @@ int main(int argc, char** argv)
   CanOpenController::Ptr my_controller;
 
   std::string can_device_name;
-  uint8_t first_node;
-  int frequency = 30;
   std::vector<std::string> chain_names;
   std::map<std::string, std::vector<int> > chain_configuratuions;
   std::vector<DS402Group::Ptr> chain_handles;

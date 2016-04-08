@@ -1,0 +1,20 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+This node contains the code for the node itself which talks to the hardware using the icl_hardware_canopen driver.
+The driver depends on the core libraries developed by the FZI and used in many projects. These are:
+
+\li icl_core
+This library provides basic functionalities like threads or data types that are system independent but also many other features. We mainly use the logging framework of it
+\li icl_hardware_canopen
+This library provides a canopen driver for Canopen devices in general and especially
+for DS402 and Schunk Powerball devices.
+\li icl_comm
+The library handles everything to do with communication. It provides the wrapper for a serial device as well as the endianess conversion in case the software runs on strange architectures
+\li tinyxml
+This third party library is used by the icl_core to parse xml files
+
+
+
+*/

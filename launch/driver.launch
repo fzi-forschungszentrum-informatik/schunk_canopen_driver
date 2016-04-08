@@ -12,7 +12,7 @@
   <!-- frequency to run the main driver node with -->
   <arg name="frequency" default="30" />
   <!-- Peak Can Device to use. It needs to be a CHAR Dev (compile with NET=NO) -->
-  <arg name="pcan_device" default="/dev/pcanusb1" />
+  <arg name="pcan_device" default="auto" />
   <!-- Indicate if the driver shall use ros control to interpolate or not. If not, the Arm will be used in Profile position mode -->
   <arg name="with_ros_control" default="true" />
   <!-- Automatically start the arm so it can be used right away -->
