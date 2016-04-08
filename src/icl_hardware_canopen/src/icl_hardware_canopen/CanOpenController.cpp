@@ -335,6 +335,53 @@ void CanOpenController::init()
                                                             m_can_device_receive_fifo_size
                                                           ));
   }
+  else if (m_can_device_name == "auto")
+  {
+    const boost::array<const std::string, 4> names = {"/dev/pcanusb0","/dev/pcanusb1","/dev/pcanusb2","/dev/pcanusb3"};
+    bool can_found = false;
+    LOGGING_INFO (CanOpen, "CAN Device was set to auto. " << endl);
+
+    for (size_t num = 0; num < names.size() ; ++num)
+    {
+        m_can_device_name = names[num];
+        LOGGING_INFO(CanOpen, "Trying CAN device: " << m_can_device_name << "... " << endl);
+        try
+        {
+            m_can_device.reset(icl_hardware::can::tCanDevice::Create( m_can_device_name.c_str(),
+                                                                      m_can_device_flags,
+                                                                      m_can_device_acceptance_code,
+                                                                      m_can_device_acceptance_mask,
+                                                                      m_can_device_baud_rate,
+                                                                      m_can_device_send_fifo_size,
+                                                                      m_can_device_receive_fifo_size
+                                                                    ));
+
+            if (m_can_device)
+            {
+              if (!m_can_device->IsInitialized())
+              {
+                std::stringstream ss;
+                continue;
+              }
+            }
+            can_found = true;
+
+            break;
+
+        }
+        catch (DeviceException const& e)
+        {
+            LOGGING_INFO(CanOpen, e.what() << endl);
+            can_found = false;
+        }
+    }
+    if (!can_found)
+    {
+        LOGGING_ERROR(CanOpen, " CAN DEVICE COULD NOT BE OPENED. \n >> Giving up.");
+        exit(-123);
+        return;
+    }
+  }
   else
   {
     m_can_device.reset(icl_hardware::can::tCanDevice::Create( m_can_device_name.c_str(),

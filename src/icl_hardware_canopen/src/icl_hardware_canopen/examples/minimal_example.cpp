@@ -24,7 +24,7 @@ int main (int argc, char* argv[])
   // Initializing
   icl_core::logging::initialize(argc, argv);
 
-  CanOpenController my_controller("/dev/pcanusb1");
+  CanOpenController my_controller("auto");
 
   DS402Group::Ptr arm_group = my_controller.getGroup<DS402Group>();
   my_controller.addNode<SchunkPowerBallNode>(3);
@@ -71,7 +71,7 @@ int main (int argc, char* argv[])
     }
     usleep(10000);
 
-    arm_group->printStatus(8);
+//     arm_group->printStatus(8);
 
     if (arm_group->isTargetReached(foo))
     {

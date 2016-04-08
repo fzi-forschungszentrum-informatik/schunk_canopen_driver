@@ -206,10 +206,10 @@ public:
 private:
   static std::string lookupErrorString(const uint32_t error_code);
 
-  uint32_t m_response_wait_time_ms;
 
   uint8_t m_node_id;
   CanDevPtr m_can_device;
+  uint32_t m_response_wait_time_ms;
 
   bool m_data_update_received;
   boost::mutex m_data_buffer_mutex;

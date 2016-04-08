@@ -22,80 +22,108 @@ int main (int argc, char* argv[])
   // Initializing
   icl_core::logging::initialize(argc, argv);
 
-  CanOpenController my_controller("/dev/pcanusb1");
+  CanOpenController my_controller("auto");
 
   DS402Group::Ptr arm_group = my_controller.getGroup<DS402Group>();
   my_controller.addNode<DS402Node>(12);
 
   DS402Node::Ptr node = my_controller.getNode<DS402Node>(12);
 
-  node->setDefaultPDOMapping(DS402Node::PDO_MAPPING_INTERPOLATED_POSITION_MODE);
-  node->initNode();
+  node->setDefaultPDOMapping(DS402Node::PDO_MAPPING_PROFILE_POSITION_MODE);
+  my_controller.initNodes();
 
   node->printSupportedModesOfOperation();
 
-  node->setModeOfOperation(ds402::MOO_INTERPOLATED_POSITION_MODE);
-  node->setDefaultPDOMapping(DS402Node::PDO_MAPPING_INTERPOLATED_POSITION_MODE);
+  ds402::ProfilePositionModeConfiguration config;
+  config.profile_acceleration = 1.0;
+  config.profile_velocity = 0.5;
+  config.use_relative_targets = false;
+  config.change_set_immediately = true;
+  config.use_blending = false;
 
-  int32_t current_position;
-  int32_t target_position;
-  size_t counter = 0;
+
+  node->setTransmissionFactor(65000);
+  node->setModeOfOperation(ds402::MOO_PROFILE_POSITION_MODE);
+  node->setDefaultPDOMapping(DS402Node::PDO_MAPPING_PROFILE_POSITION_MODE);
+
+  float current_position;
+  float target_position = 0.2;
 
   my_controller.syncAll();
 
+
+  node->setupProfilePositionMode(config);
+  sleep(1);
+  node->enableNode(ds402::MOO_PROFILE_POSITION_MODE);
   sleep(1);
 
-  while (counter < 300)
+  std::string target_string = "0.0";
+
+  while (target_string != "q")
   {
-    try {
-      my_controller.syncAll();
-    }
-    catch (const std::exception& e)
-    {
-      LOGGING_ERROR (CanOpen, e.what() << endl);
-      return  -1;
-    }
+    LOGGING_INFO(CanOpen, "Please insert a new target position (between 0 and 1, insert q to abort: " << endl);
+    std::cin >> target_string;
+    std::cout << std::endl;
 
-    usleep(10000);
-
-    if (counter > 2)
+    try
     {
-      if (node)
+      target_position = boost::lexical_cast<float>(target_string);
+    }
+    catch(boost::bad_lexical_cast &)
+    {
+      if (target_string != "q")
       {
-        node->enableNode(ds402::MOO_INTERPOLATED_POSITION_MODE);
-        node->printStatus();
+        LOGGING_ERROR (CanOpen, "Invalid input! Please insert a numeric target or q to exit." << endl);
       }
-      else
-      {
-        arm_group->printStatus();
-      }
+      continue;
     }
 
-//     node->m_sdo.upload(false, 0x6064, 0, position);
-//     LOGGING_INFO (CanOpen, "Device is at position " << position << endl);
-//
-    if (counter == 5)
+    node->setTarget(target_position);
+
+    bool is_reached = false;
+
+    size_t counter = 0;
+
+    while ((!is_reached && counter > 5) || counter <= 5)
     {
-      try
-      {
-        current_position = node->getTPDOValue<int32_t>("measured_position");
-        LOGGING_INFO (CanOpen, "Current position: " << current_position << endl);
+      try {
+        my_controller.syncAll();
       }
       catch (const std::exception& e)
       {
         LOGGING_ERROR (CanOpen, e.what() << endl);
-        return -1;
+        return  -1;
       }
+
+      usleep(10000);
+
+      if (counter > 2)
+      {
+        if (node)
+        {
+          try
+          {
+            node->printStatus();
+            is_reached = node->isTargetReached();
+            current_position = node->getTPDOValue<int32_t>("measured_position");
+            LOGGING_INFO (CanOpen, "Current position: " << current_position << endl);
+          }
+          catch (const std::exception& e)
+          {
+            LOGGING_ERROR (CanOpen, e.what() << endl);
+            return -1;
+          }
+        }
+      }
+
+      if (counter == 5)
+      {
+        my_controller.enablePPMotion();
+      }
+      ++counter;
     }
 
-    if (counter > 5 && counter < 299)
-    {
-      target_position = current_position + 100*(counter-5);
-      LOGGING_INFO (CanOpen, "Sinus target: " << target_position << endl);
-      node->setTarget(target_position);
-    }
-
-    ++counter;
+    LOGGING_INFO (CanOpen, "Target reached" << endl);
   }
 
   node->disableNode();

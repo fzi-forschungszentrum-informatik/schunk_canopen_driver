@@ -30,7 +30,7 @@ int main (int argc, char* argv[])
   // Initializing
   icl_core::logging::initialize(argc, argv);
 
-  CanOpenController my_controller("/dev/pcanusb1");
+  CanOpenController my_controller("auto");
 
   my_controller.addGroup<DS402Group>("arm");
   my_controller.addNode<SchunkPowerBallNode>(3, "arm");
