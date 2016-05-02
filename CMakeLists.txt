@@ -26,6 +26,7 @@ FIND_PACKAGE( icl_core REQUIRED)
 FIND_PACKAGE( icl_hardware REQUIRED COMPONENTS icl_hardware_canopen)
 FIND_PACKAGE( icl_comm OPTIONAL_COMPONENTS icl_comm_websocket)
 
+
 # generate_dynamic_reconfigure_options(
 #   cfg/schunk_canopen_driver_config.cfg
 # )
@@ -112,7 +113,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES
   CATKIN_DEPENDS roscpp actionlib hardware_interface controller_manager message_runtime
-  DEPENDS icl_hardware_canopen
+  DEPENDS
 )
 
 ###########
