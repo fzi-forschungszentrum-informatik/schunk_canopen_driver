@@ -4,7 +4,7 @@
   <version>1.0.2</version>
   <description>The schunk_canopen_driver package</description>
 
-  <maintainer email="heppner@fzi.de">Felix Mauch</maintainer>
+  <maintainer email="heppner@fzi.de">Georg Heppner</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
