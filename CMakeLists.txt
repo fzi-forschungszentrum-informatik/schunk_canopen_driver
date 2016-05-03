@@ -12,14 +12,15 @@ ADD_SUBDIRECTORY (src/icl_hardware_canopen)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
   actionlib
-  hardware_interface
-  controller_manager
-  message_generation
-  urdf
-  std_msgs
   control_msgs
+  controller_manager
+  hardware_interface
+  message_generation
+  roscpp
+  sensor_msgs
+  std_msgs
+  urdf
 )
 
 FIND_PACKAGE( icl_core REQUIRED)
@@ -96,8 +97,9 @@ add_service_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
    DEPENDENCIES
-   std_msgs
    control_msgs
+   sensor_msgs
+   std_msgs
 )
 
 ###################################

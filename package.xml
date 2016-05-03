@@ -38,25 +38,31 @@
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>actionlib</build_depend>
+  <build_depend>control_msgs</build_depend>
+  <build_depend>controller_manager</build_depend>
+  <build_depend>fzi_icl_can</build_depend>
+  <build_depend>fzi_icl_core</build_depend>
+  <build_depend>hardware_interface</build_depend>
+  <build_depend>message_generation</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
-  <build_depend>actionlib</build_depend>
-  <build_depend>hardware_interface</build_depend>
-  <build_depend>controller_manager</build_depend>
-  <build_depend>message_generation</build_depend>
-  <build_depend>fzi_icl_core</build_depend>
-  <build_depend>fzi_icl_can</build_depend>
+  <build_depend>urdf</build_depend>
 
+
+  <run_depend>actionlib</run_depend>
+  <run_depend>control_msgs</run_depend>
+  <run_depend>controller_manager</run_depend>
+  <run_depend>fzi_icl_can</run_depend>
+  <run_depend>fzi_icl_core</run_depend>
+  <run_depend>hardware_interface</run_depend>
+  <run_depend>message_runtime</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
-  <run_depend>actionlib</run_depend>
-  <run_depend>hardware_interface</run_depend>
-  <run_depend>controller_manager</run_depend>
-  <run_depend>message_runtime</run_depend>
-  <run_depend>fzi_icl_core</run_depend>
-  <run_depend>fzi_icl_can</run_depend>
+  <run_depend>urdf</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
