@@ -2,8 +2,8 @@
 Changelog for package schunk_canopen_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.3 (2016-05-04)
+------------------
 * fix: Dependencies were wrong and others were missing
 * Updated and sorted package dependencies
 * Corrected maintainer name
