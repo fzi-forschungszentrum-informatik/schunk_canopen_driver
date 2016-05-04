@@ -6,9 +6,9 @@ ICMAKER_ADD_SOURCES(
 
 ICMAKER_DEPENDENCIES(
   icl_core
-  icl_core_config
-  icl_core_logging
   icl_hardware_canopen
+  Boost_FILESYSTEM
+  Boost_SYSTEM
   Boost_THREAD
 )
 
@@ -23,9 +23,10 @@ ICMAKER_ADD_SOURCES(
 
 ICMAKER_DEPENDENCIES(
   icl_core
-  icl_core_config
-  icl_core_logging
   icl_hardware_canopen
+  Boost_FILESYSTEM
+  Boost_SYSTEM
+  Boost_Thread
 )
 
 ICMAKER_BUILD_PROGRAM()
@@ -39,10 +40,10 @@ ICMAKER_ADD_SOURCES(
 
 ICMAKER_DEPENDENCIES(
   icl_core
-  icl_core_config
-  icl_core_logging
   icl_hardware_canopen
   Boost_THREAD
+  Boost_SYSTEM
+  Boost_FILESYSTEM
 )
 
 ICMAKER_BUILD_PROGRAM()

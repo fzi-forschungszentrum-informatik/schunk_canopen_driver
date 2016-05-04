@@ -22,9 +22,9 @@ ICMAKER_ADD_SOURCES(
 
 ICMAKER_DEPENDENCIES(
   icl_core
-  icl_core_config
-  icl_core_logging
   icl_hardware_canopen
+  Boost_SYSTEM
+  Boost_THREAD
 )
 
 IF(Boost_FOUND)
