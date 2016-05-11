@@ -84,7 +84,7 @@ SchunkCanopenNode::SchunkCanopenNode()
     LOGGING_WARNING_C(
         CanOpen,
         CanOpenController,
-        "The environment variable 'CANOPEN_RESOURCE_PATH' could not be read. Using relative path 'resources/'" << endl);
+        "The environment variable 'CANOPEN_RESOURCE_PATH' could not be read. No Schunk specific error codes will be used." << endl);
   }
   else
   {
