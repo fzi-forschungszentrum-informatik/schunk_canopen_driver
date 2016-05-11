@@ -62,11 +62,14 @@
   <run_depend>hardware_interface</run_depend>
   <run_depend>joint_limits_interface</run_depend>
   <run_depend>message_runtime</run_depend>
+  <run_depend>robot-state-publisher</run_depend>
   <run_depend>roscpp</run_depend>
+  <run_depend>ros-controllers</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
   <run_depend>urdf</run_depend>
+  <run_depend>xacro</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
