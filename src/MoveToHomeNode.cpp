@@ -49,7 +49,7 @@ int main(int argc, char** argv)
   std::map<std::string, uint8_t> joint_name_mapping;
 
   priv_nh.getParam("chain_names", chain_names);
-  priv_nh.param<std::string>("can_device_name", can_device_name, "/dev/pcanusb1");
+  priv_nh.param<std::string>("can_device_name", can_device_name, "auto");
   priv_nh.param<float>  ("ppm_profile_velocity",       ppm_config.profile_velocity,         0.2);
   priv_nh.param<float>  ("ppm_profile_acceleration",   ppm_config.profile_acceleration,     0.2);
   priv_nh.param<bool>   ("ppm_use_relative_targets",   ppm_config.use_relative_targets,     false);

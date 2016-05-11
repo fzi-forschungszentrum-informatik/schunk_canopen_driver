@@ -56,7 +56,7 @@ SchunkCanopenNode::SchunkCanopenNode()
 
   m_priv_nh.getParam("chain_names", chain_names);
   ros::param::get("~use_ros_control", m_use_ros_control);
-  m_priv_nh.param<std::string>("can_device_name", can_device_name, "/dev/pcanusb1");
+  m_priv_nh.param<std::string>("can_device_name", can_device_name, "auto");
   m_priv_nh.param<float>  ("ppm_profile_velocity",       m_ppm_config.profile_velocity,         0.2);
   m_priv_nh.param<float>  ("ppm_profile_acceleration",   m_ppm_config.profile_acceleration,     0.2);
   m_priv_nh.param<bool>   ("ppm_use_relative_targets",   m_ppm_config.use_relative_targets,     false);
