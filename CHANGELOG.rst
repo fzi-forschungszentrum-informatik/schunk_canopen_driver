@@ -2,8 +2,8 @@
 Changelog for package schunk_canopen_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.4 (2016-05-11)
+------------------
 * use the "auto" keyword for the identifier in the node executables
 * made the check for the resource path safe to null pointers
 * install launch files.
