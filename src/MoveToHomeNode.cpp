@@ -69,10 +69,19 @@ int main(int argc, char** argv)
   }
 
   // Load SCHUNK powerball specific error codes
-  std::string emcy_emergency_errors_filename =
-  boost::filesystem::path(std::getenv("CANOPEN_RESOURCE_PATH") /
-  boost::filesystem::path("EMCY_schunk.ini")).string();
-  EMCY::addEmergencyErrorMap( emcy_emergency_errors_filename, "schunk_error_codes");
+  char const* tmp = std::getenv("CANOPEN_RESOURCE_PATH");
+  if (tmp == NULL)
+  {
+    LOGGING_WARNING_C(
+        CanOpen,
+        CanOpenController,
+        "The environment variable 'CANOPEN_RESOURCE_PATH' could not be read. Using relative path 'resources/'" << endl);
+  }
+  else
+  {
+    std::string emcy_emergency_errors_filename = boost::filesystem::path(tmp / boost::filesystem::path("EMCY_schunk.ini")).string();
+    EMCY::addEmergencyErrorMap( emcy_emergency_errors_filename, "schunk_error_codes");
+  }
 
   // Get chain configuration from parameter server
   ROS_INFO_STREAM ("Can device identifier: " << can_device_name);
