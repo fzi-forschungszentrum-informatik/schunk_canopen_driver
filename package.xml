@@ -62,7 +62,7 @@
   <run_depend>hardware_interface</run_depend>
   <run_depend>joint_limits_interface</run_depend>
   <run_depend>message_runtime</run_depend>
-  <run_depend>robot-state-publisher</run_depend>
+  <run_depend>robot_state_publisher</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>ros-controllers</run_depend>
   <run_depend>sensor_msgs</run_depend>
