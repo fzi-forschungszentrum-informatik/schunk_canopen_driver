@@ -2,8 +2,8 @@
 Changelog for package schunk_canopen_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.5 (2016-05-12)
+------------------
 * added missing runtime dependencies
 * Contributors: Felix Mauch
 
