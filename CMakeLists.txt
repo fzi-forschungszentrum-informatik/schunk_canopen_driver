@@ -139,7 +139,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${icl_hardware_INCLUDE_DIRS}
+  ${icl_hardware_can_INCLUDE_DIRS}
   ${icl_hardware_canopen_INCLUDE_DIRS}
   ${icl_core_INCLUDE_DIRS}
   ${icl_comm_INCLUDE_DIRS}
