@@ -198,9 +198,9 @@ void SchunkCanopenHardwareInterface::write(ros::Time time, ros::Duration period)
   }
 }
 
-bool SchunkCanopenHardwareInterface::canSwitch(const std::list< hardware_interface::ControllerInfo >& start_list, const std::list< hardware_interface::ControllerInfo >& stop_list) const
+bool SchunkCanopenHardwareInterface::prepareSwitch(const std::list< hardware_interface::ControllerInfo >& start_list, const std::list< hardware_interface::ControllerInfo >& stop_list)
 {
-    return hardware_interface::RobotHW::canSwitch(start_list, stop_list);
+    return hardware_interface::RobotHW::prepareSwitch(start_list, stop_list);
 }
 
 void SchunkCanopenHardwareInterface::doSwitch(const std::list< hardware_interface::ControllerInfo >& start_list, const std::list< hardware_interface::ControllerInfo >& stop_list)

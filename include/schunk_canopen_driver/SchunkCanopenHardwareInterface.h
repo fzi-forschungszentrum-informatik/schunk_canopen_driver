@@ -59,10 +59,10 @@ public:
   /// \brief write the command to the robot hardware.
   virtual void write(ros::Time time, ros::Duration period);
 
-  bool canSwitch(
+  virtual bool prepareSwitch(
       const std::list<hardware_interface::ControllerInfo> &start_list,
-      const std::list<hardware_interface::ControllerInfo> &stop_list) const;
-  void doSwitch(const std::list<hardware_interface::ControllerInfo>&start_list,
+      const std::list<hardware_interface::ControllerInfo> &stop_list);
+  virtual void doSwitch(const std::list<hardware_interface::ControllerInfo>&start_list,
       const std::list<hardware_interface::ControllerInfo>&stop_list);
 
   /*!
