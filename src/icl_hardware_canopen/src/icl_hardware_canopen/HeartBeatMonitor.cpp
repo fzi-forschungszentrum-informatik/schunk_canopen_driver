@@ -29,7 +29,7 @@ HeartBeatMonitor::HeartBeatMonitor()
   : m_period_time_ms(100),
   m_running(false)
 {
-  m_thread = boost::thread(&HeartBeatMonitor::workerFunction, this);
+  start();
 }
 
 HeartBeatMonitor::~HeartBeatMonitor()
@@ -96,7 +96,15 @@ void HeartBeatMonitor::stop()
 
 void HeartBeatMonitor::start()
 {
-  m_thread.start_thread();
+  if (!m_running)
+  {
+    m_thread = boost::thread(&HeartBeatMonitor::workerFunction, this);
+    m_running = true;
+  }
+  else
+  {
+    LOGGING_WARNING(CanOpen, "start() called although HeartbeatMonitor thread is already running. Start request will be ignored." << endl);
+  }
 }
 
 void HeartBeatMonitor::reset()
