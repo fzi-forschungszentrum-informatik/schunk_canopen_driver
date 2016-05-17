@@ -2,8 +2,8 @@
 Changelog for package schunk_canopen_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.6 (2016-05-17)
+------------------
 * made xacro usage conform to current standards from jade and kinetic
 * implement prepareSwitch instead of canSwitch
 * fix: do not start boost thread explicitly
