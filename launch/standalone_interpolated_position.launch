@@ -15,7 +15,7 @@
   </include>
 
   <!-- robot model -->
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find schunk_canopen_driver)/urdf/lwa4p/arm.urdf.xacro'" />
+  <param name="robot_description" command="rosrun xacro xacro --inorder '$(find schunk_canopen_driver)/urdf/lwa4p/arm.urdf.xacro'" />
 
   <!-- ROS-Control system bringup -->
   <include file="$(find schunk_canopen_driver)/launch/ros_control.launch">

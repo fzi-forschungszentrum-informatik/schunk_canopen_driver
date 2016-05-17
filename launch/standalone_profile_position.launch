@@ -17,7 +17,7 @@
   </include>
 
   <!-- robot model -->
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find schunk_canopen_driver)/urdf/lwa4p/arm.urdf.xacro'" />
+  <param name="robot_description" command="rosrun xacro xacro --inorder '$(find schunk_canopen_driver)/urdf/lwa4p/arm.urdf.xacro'" />
 
   <!--   Convert joint states to /tf tranforms -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>

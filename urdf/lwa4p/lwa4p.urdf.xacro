@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
   <!-- Safety offset in rad towards the hard stop of the arm -->
-  <property name="safety_offset" value="0.02"/>
+  <xacro:property name="safety_offset" value="0.02"/>
 
   <!-- Some additional information used by other tools -->
   <xacro:include filename="$(find schunk_canopen_driver)/urdf/lwa4p/lwa4p.gazebo.xacro" />
@@ -9,13 +9,21 @@
 
   <xacro:include filename="$(find schunk_canopen_driver)/urdf/materials.urdf.xacro" />
 
+  <xacro:macro name="default_inertial" params="mass">
+    <inertial>
+      <mass value="${mass}" />
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </inertial>
+  </xacro:macro>
+
   <!-- Schunk Powerball (LWA4P) Macro -->
   <xacro:macro name="schunk_lwa4p" params="parent name *origin">
 
 
     <!-- joint between base_link and arm_0_link -->
     <joint name="${name}_0_joint" type="fixed" >
-      <insert_block name="origin" />
+      <xacro:insert_block name="origin" />
       <parent link="${parent}" />
       <child link="${name}_0_link" />
     </joint>
@@ -54,7 +62,7 @@
 
 
     <link name="${name}_1_link">
-      <xacro:default_inertial/>
+      <xacro:default_inertial mass="0.29364"/>
 <!--
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0" />
@@ -91,7 +99,7 @@
     </joint>
 
     <link name="${name}_2_link">
-      <xacro:default_inertial/>
+      <xacro:default_inertial mass="0.29364"/>
 <!--
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -127,7 +135,7 @@
     </joint>
 
     <link name="${name}_3_link">
-      <xacro:default_inertial/>
+      <xacro:default_inertial mass="0.29364"/>
 <!--
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -162,7 +170,7 @@
     </joint>
 
     <link name="${name}_4_link">
-      <xacro:default_inertial/>
+      <xacro:default_inertial mass="0.29364"/>
 <!--
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -197,7 +205,7 @@
     </joint>
 
     <link name="${name}_5_link">
-      <xacro:default_inertial/>
+      <xacro:default_inertial mass="0.29364"/>
 <!--
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -232,7 +240,7 @@
     </joint>
 
     <link name="${name}_6_link">
-      <xacro:default_inertial/>
+      <xacro:default_inertial mass="0.29364"/>
 <!--
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0"/>

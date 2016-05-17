@@ -1,6 +1,6 @@
 <launch>
       <!-- Load universal robotic description format (URDF) -->
-      <param name="robot_description" command="$(find xacro)/xacro.py '$(find schunk_canopen_driver)/urdf/lwa4p/arm.urdf.xacro'" />
+      <param name="robot_description" command="rosrun xacro xacro --inorder '$(find schunk_canopen_driver)/urdf/lwa4p/arm.urdf.xacro'" />
 
       <!--  Node ->  joint_state_publisher -->
       <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
