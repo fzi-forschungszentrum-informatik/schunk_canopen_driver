@@ -30,7 +30,9 @@
 #include "exceptions.h"
 
 #include <cstdlib> // getenv
+#include <dirent.h>
 #include <boost/filesystem.hpp>
+#include <boost/regex.hpp>
 
 namespace icl_hardware {
 namespace canopen_schunk {
@@ -337,7 +339,26 @@ void CanOpenController::init()
   }
   else if (m_can_device_name == "auto")
   {
-    const boost::array<const std::string, 4> names = {"/dev/pcanusb0","/dev/pcanusb1","/dev/pcanusb2","/dev/pcanusb3"};
+    std::vector<std::string> names;
+    boost::regex pattern("pcan(usb|pci)\\d+");
+
+    DIR* dir;
+    struct dirent* ent;
+    if ((dir = opendir("/dev")) != NULL)
+    {
+      /* print all the files and directories within directory */
+      while ((ent = readdir(dir)) != NULL)
+      {
+        std::string s = ent->d_name;
+        if (boost::regex_match(s, pattern))
+        {
+          names.push_back("/dev/" + s);
+          LOGGING_INFO(CanOpen, "Found " << s << endl);
+        }
+      }
+      closedir(dir);
+    }
+
     bool can_found = false;
     LOGGING_INFO (CanOpen, "CAN Device was set to auto. " << endl);
 
