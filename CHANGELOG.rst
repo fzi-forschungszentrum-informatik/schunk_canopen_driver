@@ -2,8 +2,8 @@
 Changelog for package schunk_canopen_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.7 (2017-10-11)
+------------------
 * use more advanced pcan-device auto mode
 * Contributors: Felix Mauch
 
