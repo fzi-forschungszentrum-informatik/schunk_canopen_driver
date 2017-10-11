@@ -2,6 +2,11 @@
 Changelog for package schunk_canopen_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use more advanced pcan-device auto mode
+* Contributors: Felix Mauch
+
 1.0.6 (2016-05-17)
 ------------------
 * made xacro usage conform to current standards from jade and kinetic
