@@ -562,6 +562,13 @@ void SchunkCanopenNode::rosControlLoop()
       // Output
         m_hardware_interface->write(current_time, elapsed_time);
       }
+      else
+      {
+        for (size_t i = 0; i < m_chain_handles.size(); ++i)
+        {
+          m_chain_handles[i]->setTarget(std::vector<float>(joint_msg.position.begin(), joint_msg.position.end()));
+        }
+      }
     }
 
 //     node->printStatus();

@@ -212,7 +212,9 @@ void SchunkPowerBallNode::configureInterpolationData (const uint8_t buffer_organ
   // Number of cycles that can be missed by the interpolator. If for more than this number of cycles
   // no new interpolation data is sent, the node will go into quick stop.
   // For hard realtime security use a value of 1 here.
-  int8_t data8 = 20;
+  // Due to still existing state machine issues, we leave this higher here, which seems reasonable
+  // as long as we're doing position control only.
+  int8_t data8 = 100;
   m_sdo.download(false, 0x200e, 0, data8);
 }
 
